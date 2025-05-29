@@ -15,6 +15,17 @@
         <img src="{{ meme.image_url }}" alt="meme" loading="lazy" />
       </div>
       {% endfor %}
+
+      <div class="pagination">
+          {% if page > 1 %}
+            <a href="/?page={{ page - 1 }}">Previous</a>
+          {% endif %}
+          <span>Page {{ page }}</span>
+          {% if memes | length == 100 %}
+            <a href="/?page={{ page + 1 }}">Next</a>
+          {% endif %}
+      </div>
+
     </div>
   </body>
 </html>

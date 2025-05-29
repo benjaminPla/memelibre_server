@@ -16,7 +16,7 @@ pub struct AppState {
 async fn main() {
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://postgres:password@localhost/test")
+        .connect("postgres://postgres:password@localhost/memelibre")
         .await
         .expect("Error initializing pool");
     let tera = Tera::new("src/html/*").expect("Error initializing Tera");
