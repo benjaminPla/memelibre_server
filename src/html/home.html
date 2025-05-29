@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Meme Stream</title>
+    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="stylesheet" href="/styles/navbar.css" />
+  </head>
+  <body>
+    {% include "_navbar.html" %}
+
+    <div class="meme-container" id="meme-container">
+      {% for meme in memes %}
+      <div class="meme">
+        <img src="{{ meme.image_url }}" alt="meme" loading="lazy" />
+      </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>
