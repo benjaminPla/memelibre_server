@@ -57,10 +57,12 @@ async fn home(
         .unwrap_or_else(|_| vec![])
     };
 
+    let prev_cursor = memes.first().map(|m| m.created_at.to_rfc3339());
     let next_cursor = memes.last().map(|m| m.created_at.to_rfc3339());
 
     let mut context = Context::new();
     context.insert("memes", &memes);
+    context.insert("prev_cursor", &prev_cursor);
     context.insert("next_cursor", &next_cursor);
 
     let rendered = state

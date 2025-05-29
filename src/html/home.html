@@ -12,20 +12,27 @@
     <div class="meme-container" id="meme-container">
       {% for meme in memes %}
       <div class="meme">
-        <img src="{{ meme.image_url }}" alt="meme" loading="lazy" />
+        <img src="{{ meme.image_url }}" alt="{{ meme.title | escape }}" loading="lazy" />
+        <div class="meme-actions">
+          <button class="like-btn">👍 Like</button>
+          <button class="fav-btn">⭐ Favorite</button>
+          <button class="share-btn">🔗 Share</button>
+          <button class="comment-btn">💬 Comment</button>
+        </div>
       </div>
       {% endfor %}
 
       <div class="pagination">
-          {% if page > 1 %}
-            <a href="/?page={{ page - 1 }}">Previous</a>
-          {% endif %}
-          <span>Page {{ page }}</span>
-          {% if memes | length == 100 %}
-            <a href="/?page={{ page + 1 }}">Next</a>
-          {% endif %}
+        {% if prev_cursor %}
+            <a href="/?before={{ prev_cursor }}">Previous Page</a>
+        {% endif %}
+
+        {% if memes | length == 100 and next_cursor %}
+            <a href="/?after={{ next_cursor }}">Next Page</a>
+        {% endif %}
       </div>
 
     </div>
   </body>
 </html>
+
