@@ -20,7 +20,7 @@ struct Meme {
 
 #[derive(Deserialize)]
 struct Pagination {
-    page: Option<u32>,
+    after: Option<DateTime<Utc>>,
 }
 
 pub fn router() -> Router<Arc<AppState>> {
@@ -31,24 +31,37 @@ async fn home(
     State(state): State<Arc<AppState>>,
     Query(pagination): Query<Pagination>,
 ) -> Html<String> {
-    let page = pagination.page.unwrap_or(1).max(1);
     let limit = 100;
-    let offset = (page - 1) * limit;
 
-    let memes = sqlx::query_as::<_, Meme>(
-        "SELECT title, image_url, created_at FROM memes
-    ORDER BY created_at DESC
-    LIMIT $1 OFFSET $2",
-    )
-    .bind(limit as i64)
-    .bind(offset as i64)
-    .fetch_all(&state.pool)
-    .await
-    .unwrap_or_else(|_| vec![]);
+    let memes = if let Some(after) = pagination.after {
+        sqlx::query_as::<_, Meme>(
+            "SELECT title, image_url, created_at FROM memes
+             WHERE created_at < $1
+             ORDER BY created_at DESC
+             LIMIT $2",
+        )
+        .bind(after)
+        .bind(limit as i64)
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_else(|_| vec![])
+    } else {
+        sqlx::query_as::<_, Meme>(
+            "SELECT title, image_url, created_at FROM memes
+             ORDER BY created_at DESC
+             LIMIT $1",
+        )
+        .bind(limit as i64)
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_else(|_| vec![])
+    };
+
+    let next_cursor = memes.last().map(|m| m.created_at.to_rfc3339());
 
     let mut context = Context::new();
     context.insert("memes", &memes);
-    context.insert("page", &page);
+    context.insert("next_cursor", &next_cursor);
 
     let rendered = state
         .tera
