@@ -1,46 +1,31 @@
 use axum::{extract::State, response::Html, routing::get, Router};
 use serde::Serialize;
 use std::sync::Arc;
-use tera::{Context, Tera};
+use tera::Context;
 
-#[derive(Serialize)]
+use crate::AppState;
+
+#[derive(Serialize, sqlx::FromRow)]
 struct Meme {
     title: String,
     image_url: String,
 }
 
-pub fn router() -> Router<Arc<Tera>> {
+pub fn router() -> Router<Arc<AppState>> {
     Router::new().route("/", get(home))
 }
 
-async fn home(State(tera): State<Arc<Tera>>) -> Html<String> {
-    let memes = vec![
-        Meme {
-            title: "Distracted Boyfriend".into(),
-            image_url: "https://i.imgflip.com/1ur9b0.jpg".into(),
-        },
-        Meme {
-            title: "Drake Hotline Bling".into(),
-            image_url: "https://i.imgflip.com/30b1gx.jpg".into(),
-        },
-        Meme {
-            title: "Two Buttons".into(),
-            image_url: "https://i.imgflip.com/1g8my4.jpg".into(),
-        },
-        Meme {
-            title: "Change My Mind".into(),
-            image_url: "https://i.imgflip.com/24y43o.jpg".into(),
-        },
-        Meme {
-            title: "Left Exit 12 Off Ramp".into(),
-            image_url: "https://i.imgflip.com/22bdq6.jpg".into(),
-        },
-    ];
+async fn home(State(state): State<Arc<AppState>>) -> Html<String> {
+    let memes = sqlx::query_as::<_, Meme>("SELECT title, image_url FROM memes")
+        .fetch_all(&state.pool)
+        .await
+        .unwrap_or_else(|_| vec![]);
 
     let mut context = Context::new();
     context.insert("memes", &memes);
 
-    let rendered = tera
+    let rendered = state
+        .tera
         .render("home.html", &context)
         .unwrap_or_else(|e| format!("Template error: {}", e));
 
