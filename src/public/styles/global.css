@@ -1,11 +1,11 @@
 :root {
   /* Core Colors inspired by MercadoLibre + your vibe */
-  --blue: #003399; /* MercadoLibre deep blue */
-  --yellow: #ffcc00; /* MercadoLibre bright yellow */
-  --dark-gray: #1a1a1a; /* Dark background alternative */
-  --light-gray: #f5f5f5; /* Soft text background */
-  --cyan-glow: #00ffff; /* Neon cyan */
-  --magenta-glow: #ff00ff; /* Neon magenta */
+  --blue: #003399;          /* MercadoLibre deep blue */
+  --yellow: #ffcc00;        /* MercadoLibre bright yellow */
+  --dark-gray: #1a1a1a;     /* Dark background alternative */
+  --light-gray: #f5f5f5;    /* Soft text background */
+  --cyan-glow: #00ffff;     /* Neon cyan */
+  --magenta-glow: #ff00ff;  /* Neon magenta */
 
   /* Backgrounds */
   --primary-bg: var(--dark-gray);
@@ -22,7 +22,7 @@
 
   /* Accent Colors */
   --link-color: var(--yellow);
-  --link-hover-color: #e6b800; /* Darker yellow */
+  --link-hover-color: #e6b800;  /* Darker yellow */
 
   /* Buttons */
   --btn-bg: var(--yellow);
@@ -52,7 +52,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80px 20px;
   min-height: 100vh;
   gap: 24px;
 }
@@ -71,8 +70,7 @@ a:hover {
 }
 
 /* Headings */
-h1,
-h2 {
+h1, h2 {
   color: var(--text-primary);
   text-shadow: 0 0 6px var(--cyan-glow);
   font-size: 2rem;
@@ -80,8 +78,7 @@ h2 {
 }
 
 /* Paragraphs */
-p,
-label {
+p, label {
   color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1.5;
@@ -97,9 +94,7 @@ button {
   padding: 12px 28px;
   cursor: pointer;
   box-shadow: var(--shadow-soft);
-  transition:
-    background-color 0.3s ease,
-    transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   font-family: var(--font-primary);
 }
 button:hover {
@@ -119,9 +114,7 @@ input[type="number"] {
   padding: 10px;
   text-align: center;
   width: 100%;
-  transition:
-    box-shadow 0.3s ease,
-    transform 0.2s ease;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
 }
 input[type="number"]:hover {
   box-shadow: 0 0 15px var(--highlight-bg);
@@ -140,9 +133,7 @@ input[type="number"]:focus {
   box-shadow: var(--shadow-soft);
   padding: 16px;
   overflow: hidden;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   max-width: 400px;
 }
 .product-card:hover {
