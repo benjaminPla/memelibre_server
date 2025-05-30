@@ -13,7 +13,6 @@ use crate::AppState;
 
 #[derive(Serialize, sqlx::FromRow)]
 struct Meme {
-    title: String,
     image_url: String,
     created_at: DateTime<Utc>,
 }
@@ -24,10 +23,10 @@ struct Pagination {
 }
 
 pub fn router() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(home))
+    Router::new().route("/", get(handler))
 }
 
-async fn home(
+async fn handler(
     State(state): State<Arc<AppState>>,
     Query(pagination): Query<Pagination>,
 ) -> Html<String> {
@@ -35,7 +34,7 @@ async fn home(
 
     let memes = if let Some(after) = pagination.after {
         sqlx::query_as::<_, Meme>(
-            "SELECT title, image_url, created_at FROM memes
+            "SELECT image_url, created_at FROM memes
              WHERE created_at < $1
              ORDER BY created_at DESC
              LIMIT $2",
@@ -47,7 +46,7 @@ async fn home(
         .unwrap_or_else(|_| vec![])
     } else {
         sqlx::query_as::<_, Meme>(
-            "SELECT title, image_url, created_at FROM memes
+            "SELECT image_url, created_at FROM memes
              ORDER BY created_at DESC
              LIMIT $1",
         )

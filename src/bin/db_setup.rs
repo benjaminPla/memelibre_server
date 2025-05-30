@@ -1,9 +1,9 @@
 use sqlx::{Executor, PgPool};
+use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    let database_url = "postgres://postgres:password@localhost/memelibre";
-    let pool = PgPool::connect(database_url).await?;
+    let pool = PgPool::connect(&env::var("DB_CONN").expect("Missing DB_CONN env var")).await?;
 
     // pool.execute("DROP TABLE IF EXISTS memes;").await?;
 
@@ -11,7 +11,6 @@ async fn main() -> Result<(), sqlx::Error> {
         r#"
         CREATE TABLE IF NOT EXISTS memes (
             id SERIAL PRIMARY KEY,
-            title TEXT NOT NULL UNIQUE,
             image_url TEXT NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
@@ -21,14 +20,13 @@ async fn main() -> Result<(), sqlx::Error> {
 
     pool.execute(
         r#"
-        INSERT INTO memes (title, image_url)
+        INSERT INTO memes (image_url)
         VALUES
-            ('Distracted Boyfriend', 'https://i.imgflip.com/1ur9b0.jpg'),
-            ('Drake Hotline Bling', 'https://i.imgflip.com/30b1gx.jpg'),
-            ('Two Buttons', 'https://i.imgflip.com/1g8my4.jpg'),
-            ('Change My Mind', 'https://i.imgflip.com/24y43o.jpg'),
-            ('Left Exit 12 Off Ramp', 'https://i.imgflip.com/22bdq6.jpg')
-        ON CONFLICT (title) DO NOTHING;
+            ('https://i.imgflip.com/1ur9b0.jpg'),
+            ('https://i.imgflip.com/30b1gx.jpg'),
+            ('https://i.imgflip.com/1g8my4.jpg'),
+            ('https://i.imgflip.com/24y43o.jpg'),
+            ('https://i.imgflip.com/22bdq6.jpg');
         "#,
     )
     .await?;

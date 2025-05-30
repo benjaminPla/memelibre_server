@@ -1,2 +1,11 @@
-- [ ] improve homepagination
+- [ ] improve home pagination
 - [ ] s3 keys for read and write
+- [x] make s3 public read
+- [ ] update html error
+- [ ] add meme likes
+- [ ] add meme share
+- [ ] add meme tags
+- [ ] add meme comments
+- [ ] check `name` in upload logic
+- [ ] remove health controller
+- [ ] resolve b2 authtoken
