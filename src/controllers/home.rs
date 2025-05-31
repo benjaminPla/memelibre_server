@@ -32,8 +32,8 @@ async fn handler(
 ) -> Html<String> {
     let limit = 100;
 
-    let memes = if let Some(after) = pagination.after {
-        sqlx::query_as::<_, Meme>(
+    let memes: Vec<Meme> = if let Some(after) = pagination.after {
+        sqlx::query_as(
             "SELECT image_url, created_at FROM memes
              WHERE created_at < $1
              ORDER BY created_at DESC
@@ -45,7 +45,7 @@ async fn handler(
         .await
         .unwrap_or_else(|_| vec![])
     } else {
-        sqlx::query_as::<_, Meme>(
+        sqlx::query_as(
             "SELECT image_url, created_at FROM memes
              ORDER BY created_at DESC
              LIMIT $1",
