@@ -28,8 +28,7 @@ async fn main() {
         .nest_service("/public", ServeDir::new("src/public"))
         .merge(controllers::home::router())
         .nest("/upload", controllers::upload::router())
-        .with_state(app_state)
-        .nest("/health", controllers::health::router());
+        .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await

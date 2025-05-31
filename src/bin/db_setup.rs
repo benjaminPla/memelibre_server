@@ -34,15 +34,15 @@ async fn main() -> Result<(), sqlx::Error> {
     .await?;
 
     // pool.execute(
-        // r#"
-        // INSERT INTO memes (image_url)
-        // VALUES
-            // ('https://i.imgflip.com/1ur9b0.jpg'),
-            // ('https://i.imgflip.com/30b1gx.jpg'),
-            // ('https://i.imgflip.com/1g8my4.jpg'),
-            // ('https://i.imgflip.com/24y43o.jpg'),
-            // ('https://i.imgflip.com/22bdq6.jpg');
-        // "#,
+    // r#"
+    // INSERT INTO memes (image_url)
+    // VALUES
+    // ('https://i.imgflip.com/1ur9b0.jpg'),
+    // ('https://i.imgflip.com/30b1gx.jpg'),
+    // ('https://i.imgflip.com/1g8my4.jpg'),
+    // ('https://i.imgflip.com/24y43o.jpg'),
+    // ('https://i.imgflip.com/22bdq6.jpg');
+    // "#,
     // )
     // .await?;
 
