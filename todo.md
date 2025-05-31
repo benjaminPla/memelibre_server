@@ -2,10 +2,11 @@
 - [ ] s3 keys for read and write
 - [x] make s3 public read
 - [ ] update html error
-- [ ] add meme likes
+- [ ] add meme likes - likes table, user_id + meme_id unique
 - [ ] add meme share
 - [ ] add meme tags
 - [ ] add meme comments
 - [ ] check `name` in upload logic
 - [ ] remove health controller
 - [ ] resolve b2 authtoken
+- [ ] add gif
