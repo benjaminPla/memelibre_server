@@ -1,4 +1,4 @@
-use axum::Router;
+use axum::{middleware, Router};
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::env;
 use std::sync::Arc;
@@ -6,6 +6,8 @@ use tera::Tera;
 use tower_http::services::ServeDir;
 
 mod controllers;
+mod middlewares;
+mod utils;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -29,6 +31,7 @@ async fn main() {
         .merge(controllers::home::router())
         .nest("/upload", controllers::upload::router())
         .nest("/users", controllers::users::router())
+        .layer(middleware::from_fn(middlewares::with_auth::handler))
         .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")

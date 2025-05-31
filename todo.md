@@ -10,3 +10,5 @@
 - [ ] remove health controller
 - [ ] resolve b2 authtoken
 - [ ] add gif
+- [ ] add user_image
+- [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern

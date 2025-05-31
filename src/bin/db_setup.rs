@@ -11,9 +11,9 @@ async fn main() -> Result<(), sqlx::Error> {
     pool.execute(
         r#"
         CREATE TABLE IF NOT EXISTS memes (
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
             id SERIAL PRIMARY KEY,
-            image_url TEXT NOT NULL,
-            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            image_url TEXT NOT NULL
         );
         "#,
     )
@@ -22,12 +22,12 @@ async fn main() -> Result<(), sqlx::Error> {
     pool.execute(
         r#"
         CREATE TABLE IF NOT EXISTS users (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
             email VARCHAR(255) UNIQUE NOT NULL,
-            username VARCHAR(32) UNIQUE NOT NULL,
             hashed_password VARCHAR(255) NOT NULL,
-            avatar_url TEXT,
-            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+            username VARCHAR(32) UNIQUE NOT NULL
         );
         "#,
     )
@@ -48,8 +48,8 @@ async fn main() -> Result<(), sqlx::Error> {
 
     pool.execute(
         r#"
-        INSERT INTO users (email, username, hashed_password)
-        VALUES ('benjaminpla.dev@gmail.com', 'admin', '12345')
+        INSERT INTO users (email,hashed_password, is_admin, username)
+        VALUES ('benjaminpla.dev@gmail.com', '12345', true, 'ben')
         "#,
     )
     .await?;

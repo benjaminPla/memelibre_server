@@ -1,7 +1,3 @@
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Argon2,
-};
 use axum::{
     extract::{Json, State},
     response::Redirect,
@@ -9,30 +5,28 @@ use axum::{
 use serde::Deserialize;
 use std::sync::Arc;
 
+use crate::utils;
 use crate::AppState;
 
 #[derive(Deserialize)]
 pub struct Request {
     email: String,
+    is_admin: bool,
     password: String,
     username: String,
 }
 
 pub async fn handler(State(state): State<Arc<AppState>>, Json(payload): Json<Request>) -> Redirect {
-    let argon2 = Argon2::default();
-    let salt = SaltString::generate(&mut OsRng);
-    let hashed_password = argon2
-        .hash_password(payload.password.as_bytes(), &salt)
-        .expect("Error on `hash_password`")
-        .to_string();
+    let hashed_password = utils::hash_password(&payload.password);
 
     let result = sqlx::query(
-        "INSERT INTO users (email, username, hashed_password)
-         VALUES ($1, $2, $3)",
+        "INSERT INTO users (email, hashed_password, is_admin, username)
+         VALUES ($1, $2, $3, $4)",
     )
     .bind(&payload.email)
-    .bind(&payload.username)
     .bind(&hashed_password)
+    .bind(&payload.is_admin)
+    .bind(&payload.username)
     .execute(&state.pool)
     .await;
 
