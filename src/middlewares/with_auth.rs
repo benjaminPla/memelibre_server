@@ -14,12 +14,10 @@ pub async fn handler(mut req: Request<Body>, next: Next) -> Result<Response, Sta
         Some(token) => token,
         None => return Err(StatusCode::UNAUTHORIZED),
     };
-    println!("0. {:?}", token);
     let token = match token.to_str() {
         Ok(token) => token,
         Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
     };
-    println!("1. {}", token);
 
     let jwt_secret = env::var("JWT_SECRET").expect("Missing JWT_SECRET env var");
 
@@ -29,10 +27,7 @@ pub async fn handler(mut req: Request<Body>, next: Next) -> Result<Response, Sta
         &Validation::new(Algorithm::HS256),
     ) {
         Ok(data) => data,
-        Err(e) => {
-            eprintln!("2. {}", e);
-            return Err(StatusCode::UNAUTHORIZED);
-        }
+        Err(_) => return Err(StatusCode::UNAUTHORIZED),
     };
 
     req.extensions_mut().insert(token_data.claims);
