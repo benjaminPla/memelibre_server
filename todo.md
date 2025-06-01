@@ -12,3 +12,4 @@
 - [ ] add gif
 - [ ] add user_image
 - [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern
+- [ ] add thiserror crate

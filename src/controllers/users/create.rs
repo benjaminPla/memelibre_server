@@ -1,12 +1,11 @@
+use crate::AppState;
 use axum::{
     extract::{Json, State},
     response::Redirect,
 };
+use memelibre;
 use serde::Deserialize;
 use std::sync::Arc;
-
-use crate::utils;
-use crate::AppState;
 
 #[derive(Deserialize)]
 pub struct Request {
@@ -17,7 +16,7 @@ pub struct Request {
 }
 
 pub async fn handler(State(state): State<Arc<AppState>>, Json(payload): Json<Request>) -> Redirect {
-    let hashed_password = utils::hash_password(&payload.password);
+    let hashed_password = memelibre::hash_password(&payload.password);
 
     let result = sqlx::query(
         "INSERT INTO users (email, hashed_password, is_admin, username)

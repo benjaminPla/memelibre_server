@@ -1,3 +1,4 @@
+use memelibre;
 use sqlx::{Executor, PgPool};
 use std::env;
 
@@ -46,12 +47,18 @@ async fn main() -> Result<(), sqlx::Error> {
     // )
     // .await?;
 
-    pool.execute(
+    let hashed_password = memelibre::hash_password("12345");
+    sqlx::query(
         r#"
-        INSERT INTO users (email,hashed_password, is_admin, username)
-        VALUES ('benjaminpla.dev@gmail.com', '12345', true, 'ben')
+        INSERT INTO users (email, hashed_password, is_admin, username)
+        VALUES ($1, $2, $3, $4)
         "#,
     )
+    .bind("benjaminpla.dev@gmail.com")
+    .bind(&hashed_password)
+    .bind(true)
+    .bind("ben")
+    .execute(&pool)
     .await?;
 
     println!("Database setup complete.");

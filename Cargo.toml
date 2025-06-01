@@ -10,10 +10,12 @@ axum = { version = "0.8.4", features = ["multipart"] }
 bytes = "1.10.1"
 chrono = { version = "0.4.41", features = ["serde"] }
 hyper = { version = "1.6.0", features = ["full"] }
+jsonwebtoken = "9.3.1"
 reqwest = "0.12.18"
 serde = { version = "1.0.219", features = ["derive"] }
-sqlx = { version = "0.8.6", features = ["chrono", "macros", "postgres", "runtime-tokio"] }
+sqlx = { version = "0.8.6", features = ["chrono", "macros", "postgres", "runtime-tokio", "uuid"] }
 tera = "1.20.0"
 tokio = { version = "1.45.1", features = ["full"] }
 tower-http = { version = "0.6.4", features = ["fs"] }
 uuid = { version = "1.17.0", features = ["v4"] }
+
