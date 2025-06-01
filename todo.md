@@ -15,3 +15,4 @@
 - [ ] add thiserror crate
 - [ ] jwt custom errors
 - [ ] rethink middlewares naming
+- [ ] add upload.html max weigth note

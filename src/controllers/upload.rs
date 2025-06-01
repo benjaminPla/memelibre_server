@@ -1,3 +1,4 @@
+use crate::AppState;
 use axum::{
     extract::{Multipart, State},
     response::{Html, Redirect},
@@ -5,14 +6,13 @@ use axum::{
     Router,
 };
 use chrono::Utc;
+use memelibre;
 use reqwest::Client;
 use serde::Serialize;
 use std::env;
 use std::sync::Arc;
 use tera::Context;
 use uuid::Uuid;
-
-use crate::AppState;
 
 #[derive(Serialize, sqlx::FromRow)]
 struct Meme {
@@ -34,6 +34,8 @@ async fn html(State(state): State<Arc<AppState>>) -> Html<String> {
         .unwrap_or_else(|e| format!("Template error: {}", e));
     Html(rendered)
 }
+
+// const MAX_FILE_SIZE: usize = 5 * 1024 * 1024; // 5MB
 
 pub async fn handler(
     State(state): State<Arc<AppState>>,
@@ -62,12 +64,13 @@ pub async fn handler(
         unique_filename
     );
 
-    let upload_url = dbg!(env::var("B2_UPLOAD_URL").unwrap());
-    let upload_auth_token = dbg!(env::var("B2_TOKEN").unwrap());
+    let b2_credentials = memelibre::get_b2_token()
+        .await
+        .map_err(|e| Html(format!("Failed to get B2 credentials: {}", e)))?;
 
     let response = client
-        .post(upload_url)
-        .header("Authorization", upload_auth_token)
+        .post(b2_credentials.upload_url)
+        .header("Authorization", b2_credentials.auth_token)
         .header("X-Bz-File-Name", unique_filename.clone())
         .header("Content-Type", "b2/x-auto")
         .header("Content-Length", file_data.len())

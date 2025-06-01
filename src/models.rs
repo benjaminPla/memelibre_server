@@ -8,3 +8,9 @@ pub struct JWTClaims {
     pub sub: Uuid,
     pub username: String,
 }
+
+#[derive(Deserialize)]
+pub struct B2Credentials {
+    pub auth_token: String,
+    pub upload_url: String,
+}
