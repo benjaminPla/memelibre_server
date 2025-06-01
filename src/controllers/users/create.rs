@@ -9,8 +9,7 @@ use std::sync::Arc;
 
 #[derive(Deserialize)]
 pub struct Request {
-    email: String,
-    is_admin: bool,
+    is_admin: Option<bool>,
     password: String,
     username: String,
 }
@@ -19,12 +18,11 @@ pub async fn handler(State(state): State<Arc<AppState>>, Json(payload): Json<Req
     let hashed_password = memelibre::hash_password(&payload.password);
 
     let result = sqlx::query(
-        "INSERT INTO users (email, hashed_password, is_admin, username)
-         VALUES ($1, $2, $3, $4)",
+        "INSERT INTO users (hashed_password, is_admin, username)
+         VALUES ($1, $2, $3)",
     )
-    .bind(&payload.email)
     .bind(&hashed_password)
-    .bind(&payload.is_admin)
+    .bind(&payload.is_admin.unwrap_or(false))
     .bind(&payload.username)
     .execute(&state.pool)
     .await;

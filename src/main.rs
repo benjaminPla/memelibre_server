@@ -7,6 +7,7 @@ use tower_http::services::ServeDir;
 
 mod controllers;
 mod middlewares;
+mod models;
 
 #[derive(Clone)]
 pub struct AppState {

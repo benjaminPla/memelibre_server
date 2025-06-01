@@ -24,7 +24,6 @@ async fn main() -> Result<(), sqlx::Error> {
         r#"
         CREATE TABLE IF NOT EXISTS users (
             created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-            email VARCHAR(255) UNIQUE NOT NULL,
             hashed_password VARCHAR(255) NOT NULL,
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             is_admin BOOLEAN NOT NULL DEFAULT FALSE,
@@ -50,14 +49,13 @@ async fn main() -> Result<(), sqlx::Error> {
     let hashed_password = memelibre::hash_password("12345");
     sqlx::query(
         r#"
-        INSERT INTO users (email, hashed_password, is_admin, username)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO users (hashed_password, is_admin, username)
+        VALUES ($1, $2, $3)
         "#,
     )
-    .bind("benjaminpla.dev@gmail.com")
     .bind(&hashed_password)
     .bind(true)
-    .bind("ben")
+    .bind("admin")
     .execute(&pool)
     .await?;
 

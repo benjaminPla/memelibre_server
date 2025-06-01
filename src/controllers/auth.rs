@@ -1,5 +1,5 @@
+use crate::models;
 use crate::AppState;
-use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use axum::{
     extract::{Json, State},
     http::StatusCode,
@@ -9,30 +9,23 @@ use axum::{
 };
 use jsonwebtoken::{encode, EncodingKey, Header};
 use memelibre;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::env;
 use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(Deserialize)]
-pub struct LoginRequest {
-    pub email: String,
-    pub password: String,
+struct LoginRequest {
+    password: String,
+    username: String,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct Claims {
-    pub sub: String,
-    pub is_admin: bool,
-    pub exp: usize,
-}
-
-#[derive(sqlx::FromRow, Debug)]
+#[derive(sqlx::FromRow)]
 struct User {
-    id: Uuid,
-    email: String,
     hashed_password: String,
+    id: Uuid,
     is_admin: bool,
+    username: String,
 }
 
 pub fn router() -> Router<Arc<AppState>> {
@@ -43,11 +36,12 @@ async fn handler(
     State(state): State<Arc<AppState>>,
     Json(body): Json<LoginRequest>,
 ) -> Result<Response, StatusCode> {
-    let user: Result<Option<User>, _> =
-        sqlx::query_as("SELECT id, email, hashed_password, is_admin FROM users WHERE email = $1")
-            .bind(&body.email)
-            .fetch_optional(&state.pool)
-            .await;
+    let user: Result<Option<User>, _> = sqlx::query_as(
+        "SELECT hashed_password, id, is_admin, username FROM users WHERE username = $1",
+    )
+    .bind(&body.username)
+    .fetch_optional(&state.pool)
+    .await;
 
     let user = match user {
         Ok(user) => user,
@@ -63,11 +57,13 @@ async fn handler(
         return Err(StatusCode::UNAUTHORIZED);
     }
 
-    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET not set");
-    let claims = Claims {
-        sub: user.id.to_string(),
-        is_admin: user.is_admin,
+    let jwt_secret = env::var("JWT_SECRET").expect("Missing JWT_SECRET env var");
+
+    let claims = models::JWTClaims {
         exp: (chrono::Utc::now().timestamp() + 3600) as usize,
+        is_admin: user.is_admin,
+        sub: user.id,
+        username: user.username,
     };
 
     let token = encode(
