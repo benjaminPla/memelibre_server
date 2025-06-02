@@ -35,8 +35,6 @@ async fn html(State(state): State<Arc<AppState>>) -> Html<String> {
     Html(rendered)
 }
 
-// const MAX_FILE_SIZE: usize = 5 * 1024 * 1024; // 5MB
-
 pub async fn handler(
     State(state): State<Arc<AppState>>,
     mut multipart: Multipart,
@@ -47,7 +45,12 @@ pub async fn handler(
 
     while let Some(field) = multipart.next_field().await.unwrap_or(None) {
         if field.name() == Some("file") {
-            file_data = Some(field.bytes().await.unwrap_or_default());
+            file_data = Some(
+                field
+                    .bytes()
+                    .await
+                    .map_err(|_e| Html("Error reading the file".into()))?,
+            );
         }
     }
 
@@ -55,6 +58,21 @@ pub async fn handler(
         Some(data) => data,
         None => return Err(Html("Missing file".into())),
     };
+
+    let max_file_size: usize = env::var("MAX_FILE_SIZE")
+        .expect("Missing MAX_FILE_SIZE env var")
+        .parse()
+        .expect("MAX_FILE_SIZE must be a valid number");
+    println!(
+        "max_file_size: {}, file_data.len(): {}",
+        max_file_size,
+        file_data.len()
+    );
+
+    if file_data.len() > max_file_size {
+        println!("in");
+        return Err(Html("File is too large (max limit exceeded).".into()));
+    }
 
     let unique_filename = format!("{}", Uuid::new_v4());
 

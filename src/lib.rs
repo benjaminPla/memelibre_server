@@ -43,9 +43,16 @@ pub async fn get_b2_token() -> Result<models::B2Credentials, reqwest::Error> {
         bucket_id
     );
 
-    let response = dbg!(client.get(url)
-        .header("Authorization", "4_003fc32665896c00000000001_01bcc2b7_ab6d4e_acct_LHVLgZtwYcKAS_eysVDDkOpr5LY=")
-        .send().await?);
+    let response = dbg!(
+        client
+            .get(url)
+            .header(
+                "Authorization",
+                "4_003fc32665896c00000000001_01bcc2b7_ab6d4e_acct_LHVLgZtwYcKAS_eysVDDkOpr5LY="
+            )
+            .send()
+            .await?
+    );
 
     let data: B2Response = response.json().await?;
 

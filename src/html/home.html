@@ -1,21 +1,21 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <title>Meme Libe</title>
+    {% include "_metadata.html" %}
+    <link rel="stylesheet" href="public/styles/home.css" />
   </head>
   <body>
     {% include "_navbar.html" %}
 
-    <div class="meme-container" id="meme-container">
+    <div class="main-container">
       {% for meme in memes %}
-      <div class="meme">
-        <img src="{{ meme.image_url }}" alt="memelibre" loading="lazy" />
-        <div class="meme-actions">
-          <button class="like-btn">👍 Like</button>
-          <button class="fav-btn">⭐ Favorite</button>
-          <button class="share-btn">🔗 Share</button>
-          <button class="comment-btn">💬 Comment</button>
+      <div class="meme-container">
+        <img class="meme" src="{{ meme.image_url }}" alt="memelibre" loading="lazy" />
+        <div>
+          <button>👍 Like</button>
+          <button>⭐ Favorite</button>
+          <button>🔗 Share</button>
+          <button>💬 Comment</button>
         </div>
       </div>
       {% endfor %}

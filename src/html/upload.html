@@ -1,8 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <title>Meme Libe</title>
+    {% include "_metadata.html" %}
   </head>
   <body>
     {% include "_navbar.html" %}
@@ -16,9 +15,12 @@
         name="file"
         accept="image/*"
         required
-      /><br /><br />
+      /><br />
+      <small>File size cannot be more than 2 MB.</small>
+      <br /><br />
       <button type="submit">Upload</button>
     </form>
     <a href="/">Back to Home</a>
   </body>
 </html>
+

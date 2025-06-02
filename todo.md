@@ -1,18 +1,19 @@
 - [ ] improve home pagination
 - [ ] s3 keys for read and write
 - [x] make s3 public read
-- [ ] update html error
 - [ ] add meme likes - likes table, user_id + meme_id unique
 - [ ] add meme share
 - [ ] add meme tags
 - [ ] add meme comments
-- [ ] check `name` in upload logic
-- [ ] remove health controller
+- [x] check `name` in upload logic
+- [x] remove health controller
 - [ ] resolve b2 authtoken
 - [ ] add gif
 - [ ] add user_image
 - [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern
 - [ ] add thiserror crate
+- [ ] update html error
 - [ ] jwt custom errors
 - [ ] rethink middlewares naming
 - [ ] add upload.html max weigth note
+- [ ] add adds
