@@ -1,17 +1,20 @@
 use crate::models;
 use crate::AppState;
 use axum::{
-    extract::{Json, State},
+    extract::{Form, State},
     http::StatusCode,
-    response::{IntoResponse, Response},
-    routing::post,
+    response::{Html, Redirect},
+    routing::{get, post},
     Router,
 };
+use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
+use cookie::time::Duration;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use memelibre;
 use serde::Deserialize;
 use std::env;
 use std::sync::Arc;
+use tera::Context;
 use uuid::Uuid;
 
 #[derive(Deserialize)]
@@ -29,13 +32,23 @@ struct User {
 }
 
 pub fn router() -> Router<Arc<AppState>> {
-    Router::new().route("/", post(handler))
+    Router::new().route("/", get(html)).route("/", post(login))
 }
 
-async fn handler(
+async fn html(State(state): State<Arc<AppState>>) -> Html<String> {
+    let context = Context::new();
+    let rendered = state
+        .tera
+        .render("login.html", &context)
+        .unwrap_or_else(|e| format!("Template error: {}", e));
+    Html(rendered)
+}
+
+async fn login(
     State(state): State<Arc<AppState>>,
-    Json(body): Json<LoginRequest>,
-) -> Result<Response, StatusCode> {
+    jar: CookieJar,
+    Form(body): Form<LoginRequest>,
+) -> Result<(CookieJar, Redirect), StatusCode> {
     let user: Result<Option<User>, _> = sqlx::query_as(
         "SELECT hashed_password, id, is_admin, username FROM users WHERE username = $1",
     )
@@ -50,7 +63,7 @@ async fn handler(
 
     let user = match user {
         Some(user) => user,
-        None => return Err(StatusCode::NOT_FOUND),
+        None => return Err(StatusCode::UNAUTHORIZED),
     };
 
     if !memelibre::verify_password(&user.hashed_password, &body.password) {
@@ -66,12 +79,22 @@ async fn handler(
         username: user.username,
     };
 
-    let token = encode(
+    let token = match encode(
         &Header::default(),
         &claims,
         &EncodingKey::from_secret(jwt_secret.as_bytes()),
-    )
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    ) {
+        Ok(token) => token,
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
 
-    Ok((StatusCode::OK, Json(token)).into_response())
+    let cookie = Cookie::build(("token", token))
+        .path("/")
+        .http_only(true)
+        .secure(true)
+        .same_site(SameSite::Strict)
+        .max_age(Duration::seconds(3600))
+        .build();
+
+    Ok((jar.add(cookie), Redirect::to("/")))
 }

@@ -1,3 +1,4 @@
+use crate::models;
 use crate::AppState;
 use axum::{
     extract::{Multipart, State},
@@ -5,7 +6,9 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use axum_extra::extract::CookieJar;
 use chrono::Utc;
+use jsonwebtoken::{decode, DecodingKey, Validation};
 use memelibre;
 use reqwest::Client;
 use serde::Serialize;
@@ -37,8 +40,27 @@ async fn html(State(state): State<Arc<AppState>>) -> Html<String> {
 
 pub async fn handler(
     State(state): State<Arc<AppState>>,
+    jar: CookieJar,
     mut multipart: Multipart,
 ) -> Result<Redirect, Html<String>> {
+    let token = match jar.get("token") {
+        Some(cookie) => cookie.value().to_string(),
+        None => return Ok(Redirect::to("/auth/login")),
+    };
+
+    let jwt_secret = env::var("JWT_SECRET").expect("Missing JWT_SECRET env var");
+
+    let token_data = decode::<models::JWTClaims>(
+        &token,
+        &DecodingKey::from_secret(jwt_secret.as_bytes()),
+        &Validation::default(),
+    );
+
+    let claims = match token_data {
+        Ok(data) => data.claims,
+        Err(_) => return Ok(Redirect::to("/login")),
+    };
+
     let client = Client::new();
 
     let mut file_data: Option<bytes::Bytes> = None;

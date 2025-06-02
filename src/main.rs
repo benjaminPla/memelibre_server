@@ -29,7 +29,7 @@ async fn main() {
     let app = Router::new()
         .nest_service("/public", ServeDir::new("src/public"))
         .merge(controllers::home::router())
-        .nest("/auth", controllers::auth::router())
+        .nest("/login", controllers::login::router())
         .nest("/upload", controllers::upload::router())
         .nest("/users", controllers::users::router())
         .with_state(app_state);

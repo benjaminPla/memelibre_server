@@ -17,3 +17,4 @@
 - [ ] rethink middlewares naming
 - [ ] add upload.html max weigth note
 - [ ] add adds
+- [ ] add favicon
