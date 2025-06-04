@@ -82,8 +82,8 @@ pub async fn handler(
 
     let b2_credentials = match memelibre::get_b2_token().await {
         Ok(creds) => creds,
-        Err(_) => {
-            return Err(Html("Failed to connect to storage service".to_string()));
+        Err(e) => {
+            return Err(Html(format!("Failed to connect to storage service: {}", e)));
         }
     };
 

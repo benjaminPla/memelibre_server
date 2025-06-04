@@ -16,7 +16,7 @@
   --highlight-bg: var(--yellow);
 
   /* Fonts */
-  --font-primary: "Silkscreen", monospace;
+  --font-primary: "Montserrat", sans-serif;
   --font-min-size: 1rem;
   --font-max-size: 2rem;
   --font-bold: 700;
