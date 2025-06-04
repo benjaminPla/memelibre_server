@@ -1,35 +1,34 @@
 :root {
-  /* Colors
-  --blue: #003399;
-  --yellow: #ffcc00;
-  --dark-gray: #1a1a1a;
+  /* Colors */
+  --blue: #3483fa;
+  --yellow: #fff159;
+  --dark-gray: #333333;
   --light-gray: #f5f5f5;
-  --cyan-glow: #00ffff;
-  --magenta-glow: #ff00ff;
+  --white: #ffffff;
 
   /* Accent Colors */
-  --link-color: var(--yellow);
-  --link-hover-color: #e6b800;
+  --link-color: var(--blue);
+  --link-hover-color: #2968c8;
 
   /* Backgrounds */
-  --primary-bg: var(--dark-gray);
+  --primary-bg: var(--light-gray);
   --secondary-bg: var(--blue);
   --highlight-bg: var(--yellow);
 
   /* Fonts */
-  --font-primary: "Silkscreen", monospace, monospace;
+  --font-primary: "Silkscreen", monospace;
   --font-min-size: 1rem;
   --font-max-size: 2rem;
   --font-bold: 700;
 
   /* Text Colors */
-  --text-primary: var(--light-gray);
-  --text-secondary: #cccccc;
-  --text-accent: var(--yellow);
+  --text-primary: var(--dark-gray);
+  --text-secondary: #666666;
+  --text-accent: var(--blue);
 
   /* Buttons */
   --btn-bg: var(--yellow);
-  --btn-bg-hover: #e6b800;
+  --btn-bg-hover: #e6d200;
   --btn-text-color: var(--dark-gray);
 
   /* Borders and Radius */
@@ -50,6 +49,7 @@ html {
   color: var(--text-primary);
   font-family: var(--font-primary);
   font-size: clamp(var(--font-min-size), 2vw, var(--font-max-size));
+  background-color: var(--primary-bg);
 }
 
 body {
@@ -89,6 +89,7 @@ button {
   font-family: var(--font-primary);
   font-weight: var(--font-bold);
   padding: var(--spacing-small);
+  border-radius: var(--border-radius);
 }
 button:hover {
   background-color: var(--btn-bg-hover);

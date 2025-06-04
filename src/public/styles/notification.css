@@ -1,0 +1,11 @@
+#notification-container {
+  position: fixed;
+  top: var(--spacing-base);
+  right: var(--spacing-base);
+  background-color: var(--highlight-bg);
+  color: var(--text-primary);
+  padding: var(--spacing-small);
+  border-radius: var(--border-radius);
+  z-index: 10;
+}
+

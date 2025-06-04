@@ -6,8 +6,6 @@ use tera::Tera;
 use tower_http::services::ServeDir;
 
 mod controllers;
-mod middlewares;
-mod models;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -29,10 +27,7 @@ async fn main() {
     let app = Router::new()
         .nest_service("/public", ServeDir::new("src/public"))
         .merge(controllers::home::router())
-        .nest("/login", controllers::login::router())
-        .nest("/signup", controllers::signup::router())
         .nest("/upload", controllers::upload::router())
-        .nest("/likes", controllers::likes::router())
         .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")

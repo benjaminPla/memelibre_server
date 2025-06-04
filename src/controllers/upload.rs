@@ -1,4 +1,3 @@
-use crate::models;
 use crate::AppState;
 use axum::{
     extract::{Multipart, State},
@@ -6,9 +5,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use axum_extra::extract::CookieJar;
 use chrono::Utc;
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use memelibre;
 use reqwest::Client;
 use serde::Serialize;
@@ -29,35 +26,9 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/", post(handler))
 }
 
-async fn html(
-    State(state): State<Arc<AppState>>,
-    jar: CookieJar,
-) -> Result<Html<String>, Redirect> {
-    let token = match jar.get("token") {
-        Some(cookie) => cookie.value().to_string(),
-        None => return Err(Redirect::to("/login")),
-    };
-
-    let jwt_secret = env::var("JWT_SECRET").map_err(|_| Redirect::to("/login"))?;
-
-    let mut validation = Validation::new(Algorithm::HS256);
-    validation.set_required_spec_claims(&["exp"]);
-
-    let token_data = decode::<models::JWTClaims>(
-        &token,
-        &DecodingKey::from_secret(jwt_secret.as_bytes()),
-        &validation,
-    );
-
-    let _claims = match token_data {
-        Ok(data) => data.claims,
-        Err(_) => {
-            return Err(Redirect::to("/login"));
-        }
-    };
-
+async fn html(State(state): State<Arc<AppState>>) -> Result<Html<String>, Redirect> {
     let context = Context::new();
-    // Optionally: context.insert("username", &claims.username);
+
     let rendered = state
         .tera
         .render("upload.html", &context)
@@ -68,41 +39,8 @@ async fn html(
 
 pub async fn handler(
     State(state): State<Arc<AppState>>,
-    jar: CookieJar,
     mut multipart: Multipart,
 ) -> Result<Redirect, Html<String>> {
-    let token = match jar.get("token") {
-        Some(cookie) => cookie.value().to_string(),
-        None => {
-            return Err(Html("Authentication required".to_string()));
-        }
-    };
-
-    let jwt_secret = match env::var("JWT_SECRET") {
-        Ok(secret) => secret,
-        Err(_) => {
-            return Err(Html("Server configuration error".to_string()));
-        }
-    };
-
-    let mut validation = Validation::new(Algorithm::HS256);
-    validation.set_required_spec_claims(&["exp"]);
-
-    let claims = match decode::<models::JWTClaims>(
-        &token,
-        &DecodingKey::from_secret(jwt_secret.as_bytes()),
-        &validation,
-    ) {
-        Ok(data) => data.claims,
-        Err(_) => {
-            return Err(Html("Invalid token".to_string()));
-        }
-    };
-
-    if !claims.is_admin {
-        return Err(Html("Unauthorized: Admin access required".to_string()));
-    }
-
     let mut file_data: Option<bytes::Bytes> = None;
 
     while let Some(field) = multipart
