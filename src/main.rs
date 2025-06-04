@@ -32,6 +32,7 @@ async fn main() {
         .nest("/login", controllers::login::router())
         .nest("/signup", controllers::signup::router())
         .nest("/upload", controllers::upload::router())
+        .nest("/likes", controllers::likes::router())
         .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")

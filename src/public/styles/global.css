@@ -1,11 +1,11 @@
 :root {
-  /* Colors - inspired by MercadoLibre */
-  --blue: #003399; /* MercadoLibre deep blue */
-  --yellow: #ffcc00; /* MercadoLibre bright yellow */
-  --dark-gray: #1a1a1a; /* Dark background alternative */
-  --light-gray: #f5f5f5; /* Soft text background */
-  --cyan-glow: #00ffff; /* Neon cyan */
-  --magenta-glow: #ff00ff; /* Neon magenta */
+  /* Colors
+  --blue: #003399;
+  --yellow: #ffcc00;
+  --dark-gray: #1a1a1a;
+  --light-gray: #f5f5f5;
+  --cyan-glow: #00ffff;
+  --magenta-glow: #ff00ff;
 
   /* Accent Colors */
   --link-color: var(--yellow);

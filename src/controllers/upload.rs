@@ -105,39 +105,42 @@ pub async fn handler(
 
     let mut file_data: Option<bytes::Bytes> = None;
 
-    while let Some(field) = multipart.next_field().await.map_err(|_| {
-        Html("Error processing form".to_string())
-    })? {
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|_| Html("Error processing form".to_string()))?
+    {
         if field.name() == Some("file") {
-            file_data = Some(field.bytes().await.map_err(|_| {
-                Html("Error reading file".to_string())
-            })?);
+            file_data = Some(
+                field
+                    .bytes()
+                    .await
+                    .map_err(|_| Html("Error reading file".to_string()))?,
+            );
         }
     }
 
-    let file_data = file_data.ok_or_else(|| {
-        Html("Missing file".to_string())
-    })?;
+    let file_data = file_data.ok_or_else(|| Html("Missing file".to_string()))?;
 
     let max_file_size: usize = env::var("MAX_FILE_SIZE")
-        .map_err(|_| {
-            Html("Server configuration error".to_string())
-        })?
+        .map_err(|_| Html("Server configuration error".to_string()))?
         .parse()
-        .map_err(|_| {
-            Html("Server configuration error".to_string())
-        })?;
+        .map_err(|_| Html("Server configuration error".to_string()))?;
 
     if file_data.len() > max_file_size {
-        return Err(Html(format!("File is too large (max {} bytes)", max_file_size)));
+        return Err(Html(format!(
+            "File is too large (max {} bytes)",
+            max_file_size
+        )));
     }
 
     let unique_filename = Uuid::new_v4().to_string();
 
-    let b2_pod = env::var("B2_POD").map_err(|_| {
-        Html("Server configuration error".to_string())
-    })?;
-    let image_url = format!("https://f{}.backblazeb2.com/file/memelibre/{}", b2_pod, unique_filename);
+    let b2_pod = env::var("B2_POD").map_err(|_| Html("Server configuration error".to_string()))?;
+    let image_url = format!(
+        "https://f{}.backblazeb2.com/file/memelibre/{}",
+        b2_pod, unique_filename
+    );
 
     let b2_credentials = match memelibre::get_b2_token().await {
         Ok(creds) => creds,
@@ -166,18 +169,19 @@ pub async fn handler(
                 .execute(&state.pool)
                 .await
                 .map_err(|e| {
-                    eprintln!("{}",e);
+                    eprintln!("{}", e);
                     Html("Failed to save file metadata".to_string())
                 })?;
 
             Ok(Redirect::to("/"))
         }
         Ok(resp) => {
-            let err_text = resp.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            let err_text = resp
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
             Err(Html(format!("Upload failed: {}", err_text)))
         }
-        Err(_) => {
-            Err(Html("Failed to upload file".to_string()))
-        }
+        Err(_) => Err(Html("Failed to upload file".to_string())),
     }
 }

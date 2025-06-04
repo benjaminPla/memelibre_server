@@ -15,7 +15,6 @@ use serde::Deserialize;
 use std::env;
 use std::sync::Arc;
 use tera::Context;
-use uuid::Uuid;
 
 #[derive(Deserialize)]
 struct LoginRequest {
@@ -26,7 +25,7 @@ struct LoginRequest {
 #[derive(sqlx::FromRow)]
 struct User {
     hashed_password: String,
-    id: Uuid,
+    id: i32,
     is_admin: bool,
     username: String,
 }

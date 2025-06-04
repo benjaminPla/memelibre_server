@@ -13,8 +13,9 @@ use crate::AppState;
 
 #[derive(Serialize, sqlx::FromRow)]
 struct Meme {
-    image_url: String,
     created_at: DateTime<Utc>,
+    id: i32,
+    image_url: String,
 }
 
 #[derive(Deserialize)]
@@ -34,7 +35,7 @@ async fn handler(
 
     let memes: Vec<Meme> = if let Some(after) = pagination.after {
         sqlx::query_as(
-            "SELECT image_url, created_at FROM memes
+            "SELECT image_url, id, created_at FROM memes
              WHERE created_at < $1
              ORDER BY created_at DESC
              LIMIT $2",
@@ -46,7 +47,7 @@ async fn handler(
         .unwrap_or_else(|_| vec![])
     } else {
         sqlx::query_as(
-            "SELECT image_url, created_at FROM memes
+            "SELECT image_url, id, created_at FROM memes
              ORDER BY created_at DESC
              LIMIT $1",
         )

@@ -12,7 +12,7 @@
       <div class="meme-container">
         <img class="meme" src="{{ meme.image_url }}" alt="memelibre" loading="lazy" />
         <div>
-          <button>👍 Like</button>
+          <button class="btn-like" data-meme-id="{{ meme.id }}">👍 Like</button>
           <button>⭐ Favorite</button>
           <button>🔗 Share</button>
           <button>💬 Comment</button>
@@ -32,5 +32,23 @@
 
     </div>
   </body>
+
+    <script>
+      document.querySelectorAll(".btn-like").forEach(button => {
+          button.addEventListener("click", async (event) => {
+            const memeId = button.dataset.memeId;
+            try {
+              const response = await fetch(`/likes/${memeId}`, {
+                method: "POST",
+                credentials: "include",
+              });
+
+              if (response.ok) {
+                button.textContent = "👎 Unliked";
+              }
+            } catch {}
+          });
+        });
+    </script>
 </html>
 
