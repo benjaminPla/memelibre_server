@@ -1,17 +1,17 @@
-- [ ] improve home pagination
-- [ ] s3 keys for read and write
-- [x] make s3 public read
-- [ ] add meme share
-- [x] check `name` in upload logic
-- [x] remove health controller
-- [ ] resolve b2 authtoken
-- [x] add gif
-- [ ] add user_image
-- [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern
+- [ ] add adds - Google AdSense
+- [ ] add delete, delete b2 too
+- [ ] add share, individual view
 - [ ] add thiserror crate
+- [ ] cache b2
+- [ ] improve home pagination
+- [ ] improve upload view css
+- [ ] s3 keys for read and write
+- [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern
 - [ ] update html error
-- [ ] jwt custom errors
-- [ ] rethink middlewares naming
+- [x] add favicon
+- [x] add gif
 - [x] add upload.html max weigth note
-- [ ] add adds
-- [ ] add favicon
+- [x] check `name` in upload logic
+- [x] make s3 public read
+- [x] remove health controller
+- [x] resolve b2 authtoken

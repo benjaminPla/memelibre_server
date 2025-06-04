@@ -23,7 +23,6 @@
 
   /* Text Colors */
   --text-primary: var(--dark-gray);
-  --text-secondary: #666666;
   --text-accent: var(--blue);
 
   /* Buttons */
@@ -78,7 +77,7 @@ h2 {
 
 p,
 label {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 button {

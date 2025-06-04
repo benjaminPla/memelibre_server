@@ -2,25 +2,25 @@
 <html lang="en">
   <head>
     {% include "_metadata.html" %}
+    <link rel="stylesheet" href="public/styles/upload.css" />
   </head>
   <body>
     {% include "_navbar.html" %}
 
-    <h1>Upload a Meme</h1>
     <form action="/upload" method="post" enctype="multipart/form-data">
-      <label for="file">Image:</label>
-      <input
-        type="file"
-        id="file"
-        name="file"
-        accept="image/*"
-        required
-      /><br />
-      <small>File size cannot be more than 2 MB.</small>
-      <br /><br />
+        <div>
+          <label for="file">Meme:</label>
+          <input
+            type="file"
+            id="file"
+            name="file"
+            accept="image/*"
+            required
+          />
+        </div>
+      <p>File size cannot be more than 2 MB.</p>
       <button type="submit">Upload</button>
     </form>
-    <a href="/">Back to Home</a>
   </body>
 </html>
 
