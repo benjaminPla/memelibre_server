@@ -15,15 +15,6 @@
         <button onclick="sharePage()">🔗 Share</button>
       </div>
       {% endfor %}
-
-      <div class="pagination">
-        {% if prev_cursor %}
-            <a href="/?before={{ prev_cursor }}">Previous Page</a>
-        {% endif %}
-
-        {% if memes | length == 100 and next_cursor %}
-            <a href="/?after={{ next_cursor }}">Next Page</a>
-        {% endif %}
       </div>
     </div>
   </body>

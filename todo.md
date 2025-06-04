@@ -1,9 +1,9 @@
 - [ ] add adds - Google AdSense
 - [ ] add delete, delete b2 too
+- [ ] add inifite scroll
 - [ ] add share, individual view
 - [ ] add thiserror crate
 - [ ] cache b2
-- [ ] improve home pagination
 - [ ] improve upload view css
 - [ ] s3 keys for read and write
 - [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern

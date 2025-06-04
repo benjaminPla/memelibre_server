@@ -5,7 +5,6 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use chrono::Utc;
 use memelibre;
 use reqwest::Client;
 use serde::Serialize;
@@ -17,7 +16,6 @@ use uuid::Uuid;
 #[derive(Serialize, sqlx::FromRow)]
 struct Meme {
     image_url: String,
-    created_at: chrono::DateTime<Utc>,
 }
 
 pub fn router() -> Router<Arc<AppState>> {
@@ -101,9 +99,8 @@ pub async fn handler(
 
     match response {
         Ok(resp) if resp.status().is_success() => {
-            sqlx::query("INSERT INTO memes (image_url, created_at) VALUES ($1, $2)")
+            sqlx::query("INSERT INTO memes (image_url) VALUES ($1, $2)")
                 .bind(&image_url)
-                .bind(Utc::now())
                 .execute(&state.pool)
                 .await
                 .map_err(|e| {
