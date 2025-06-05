@@ -27,7 +27,10 @@ async fn handler(State(state): State<Arc<AppState>>) -> Html<String> {
     let rendered = state
         .tera
         .render("home.html", &context)
-        .unwrap_or_else(|e| format!("Template error: {}", e));
+        .unwrap_or_else(|e| {
+            eprintln!("Tera rendering error: {}", e);
+            "Template error".to_string()
+        });
 
     Html(rendered)
 }

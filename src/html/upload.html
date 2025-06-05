@@ -1,11 +1,13 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    {% include "_metadata.html" %}
-    <link rel="stylesheet" href="public/styles/upload.css" />
-  </head>
-  <body>
+{% extends "base.html" %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/public/styles/upload.css" />
+{% endblock head %}
+
+{% block body %}
     {% include "_navbar.html" %}
+    {% include "_notification.html" %} 
 
     <form action="/upload" method="post" enctype="multipart/form-data">
         <div>
@@ -21,6 +23,5 @@
       <p>File size cannot be more than 2 MB.</p>
       <button type="submit">Upload</button>
     </form>
-  </body>
-</html>
+{% endblock body %}
 
