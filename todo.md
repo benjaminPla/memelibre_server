@@ -4,6 +4,10 @@
 - [ ] add share, individual view
 - [ ] add thiserror crate
 - [ ] cache b2
+- [ ] check bucket setting for limit to MAX_FILE_SIZE
+- [ ] compress image before saving in bucket
+- [ ] convert image to webp
+- [ ] Enable CDN caching + compression  in bucket - Cache-Control: public, max-age=31536000 + Content-Encoding: gzip/br
 - [ ] improve upload view css
 - [ ] s3 keys for read and write
 - [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern

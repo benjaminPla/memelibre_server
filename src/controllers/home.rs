@@ -16,7 +16,7 @@ pub fn router() -> Router<Arc<AppState>> {
 }
 
 async fn handler(State(state): State<Arc<AppState>>) -> Html<String> {
-    let memes: Vec<Meme> = sqlx::query_as("SELECT image_url, id FROM memes")
+    let memes: Vec<Meme> = sqlx::query_as("SELECT image_url, id FROM memes ORDER BY id DESC")
         .fetch_all(&state.pool)
         .await
         .unwrap_or_else(|_| vec![]);

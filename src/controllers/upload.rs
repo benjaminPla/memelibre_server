@@ -5,13 +5,16 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use image::ImageReader;
 use memelibre;
 use reqwest::Client;
 use serde::Serialize;
 use std::env;
+use std::io::Cursor;
 use std::sync::Arc;
 use tera::Context;
 use uuid::Uuid;
+use webp::Encoder;
 
 #[derive(Serialize, sqlx::FromRow)]
 struct Meme {
@@ -63,6 +66,7 @@ pub async fn handler(
         .parse()
         .map_err(|_| Html("Server configuration error".to_string()))?;
 
+
     if file_data.len() > max_file_size {
         return Err(Html(format!(
             "File is too large (max {} bytes)",
@@ -70,7 +74,20 @@ pub async fn handler(
         )));
     }
 
-    let unique_filename = Uuid::new_v4().to_string();
+    let img = ImageReader::new(Cursor::new(&file_data))
+        .with_guessed_format()
+        .map_err(|_| Html("Unsupported image format".to_string()))?
+        .decode()
+        .map_err(|_| Html("Failed to decode image".to_string()))?;
+
+    let rgba = img.to_rgba8();
+    let (width, height) = rgba.dimensions();
+
+    let webp_data = Encoder::from_rgba(&rgba, width, height)
+        .encode(75.0)
+        .to_vec();
+
+    let unique_filename = format!("{}.webp", Uuid::new_v4());
 
     let b2_pod = env::var("B2_POD").map_err(|_| Html("Server configuration error".to_string()))?;
     let image_url = format!(
@@ -89,17 +106,17 @@ pub async fn handler(
     let response = client
         .post(&b2_credentials.upload_url)
         .header("Authorization", &b2_credentials.auth_token)
-        .header("X-Bz-File-Name", &unique_filename)
+        .header("Content-Length", webp_data.len())
         .header("Content-Type", "b2/x-auto")
-        .header("Content-Length", file_data.len())
         .header("X-Bz-Content-Sha1", "do_not_verify")
-        .body(file_data)
+        .header("X-Bz-File-Name", &unique_filename)
+        .body(webp_data.clone())
         .send()
         .await;
 
     match response {
         Ok(resp) if resp.status().is_success() => {
-            sqlx::query("INSERT INTO memes (image_url) VALUES ($1, $2)")
+            sqlx::query("INSERT INTO memes (image_url) VALUES ($1)")
                 .bind(&image_url)
                 .execute(&state.pool)
                 .await
