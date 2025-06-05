@@ -2,22 +2,23 @@
 - [ ] add delete, delete b2 too
 - [ ] add inifite scroll
 - [ ] add metadata - media and SEO
-- [ ] add share, individual view
 - [ ] add thiserror crate
 - [ ] cache b2
+- [ ] cache public files
 - [ ] check bucket setting for limit to MAX_FILE_SIZE
-- [ ] compress image before saving in bucket
 - [ ] convert gif to animated webp
 - [ ] Enable CDN caching + compression  in bucket - Cache-Control: public, max-age=31536000 + Content-Encoding: gzip/br
 - [ ] s3 keys for read and write
-- [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern
 - [ ] update html error
 - [x] add favicon
 - [x] add gif
+- [x] add share, individual view
 - [x] add upload.html max weigth note
 - [x] check `name` in upload logic
+- [x] compress image before saving in bucket
 - [x] convert image to webp
 - [x] improve upload view css
 - [x] make s3 public read
 - [x] remove health controller
 - [x] resolve b2 authtoken
+- [x] spike tower middleares

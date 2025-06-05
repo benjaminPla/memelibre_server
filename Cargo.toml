@@ -15,6 +15,6 @@ sqlx = { version = "0.8.6", features = ["chrono", "macros", "postgres", "runtime
 tera = "1.20.0"
 thiserror = "2.0.12"
 tokio = { version = "1.45.1", features = ["full"] }
-tower-http = { version = "0.6.4", features = ["fs"] }
+tower-http = { version = "0.6.6", features = ["compression-gzip", "cors", "fs", "limit", "normalize-path", "set-header", "set-status", "timeout"] }
 uuid = { version = "1.17.0", features = ["v4"] }
 webp = "0.3.0"
