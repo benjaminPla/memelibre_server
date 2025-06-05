@@ -1,7 +1,8 @@
 - [ ] add adds - Google AdSense
 - [ ] add delete, delete b2 too
-- [ ] add inifite scroll
-- [ ] add metadata - media and SEO
+- [x] add inifite scroll
+- [ ] add loader on upload meme
+- [x] add metadata - media and SEO
 - [ ] add thiserror crate
 - [ ] cache b2
 - [ ] cache public files
