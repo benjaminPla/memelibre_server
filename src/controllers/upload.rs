@@ -5,7 +5,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use image::ImageReader;
+use image::{ImageFormat, ImageReader};
 use memelibre;
 use reqwest::Client;
 use serde::Serialize;
@@ -42,6 +42,17 @@ pub async fn handler(
     State(state): State<Arc<AppState>>,
     mut multipart: Multipart,
 ) -> Result<Redirect, Html<String>> {
+    let b2_pod = env::var("B2_POD").map_err(|_| Html("Server configuration error".to_string()))?;
+    let compression_quality: f32 = env::var("COMPRESSION_QUALITY")
+        .map_err(|_| Html("Server configuration error".to_string()))?
+        .parse::<f32>()
+        .map_err(|_| Html("Server configuration error".to_string()))?
+        .clamp(0.0, 100.0);
+    let max_file_size: usize = env::var("MAX_FILE_SIZE")
+        .map_err(|_| Html("Server configuration error".to_string()))?
+        .parse()
+        .map_err(|_| Html("Server configuration error".to_string()))?;
+
     let mut file_data: Option<bytes::Bytes> = None;
 
     while let Some(field) = multipart
@@ -61,12 +72,6 @@ pub async fn handler(
 
     let file_data = file_data.ok_or_else(|| Html("Missing file".to_string()))?;
 
-    let max_file_size: usize = env::var("MAX_FILE_SIZE")
-        .map_err(|_| Html("Server configuration error".to_string()))?
-        .parse()
-        .map_err(|_| Html("Server configuration error".to_string()))?;
-
-
     if file_data.len() > max_file_size {
         return Err(Html(format!(
             "File is too large (max {} bytes)",
@@ -74,22 +79,31 @@ pub async fn handler(
         )));
     }
 
-    let img = ImageReader::new(Cursor::new(&file_data))
+    let guessed_format = ImageReader::new(Cursor::new(&file_data))
         .with_guessed_format()
         .map_err(|_| Html("Unsupported image format".to_string()))?
-        .decode()
-        .map_err(|_| Html("Failed to decode image".to_string()))?;
+        .format();
 
-    let rgba = img.to_rgba8();
-    let (width, height) = rgba.dimensions();
+    let (data, extension) = if guessed_format == Some(ImageFormat::Gif) {
+        (file_data.to_vec(), "gif")
+    } else {
+        let img = ImageReader::new(Cursor::new(&file_data))
+            .with_guessed_format()
+            .map_err(|_| Html("Unsupported image format".to_string()))?
+            .decode()
+            .map_err(|_| Html("Failed to decode image".to_string()))?;
 
-    let webp_data = Encoder::from_rgba(&rgba, width, height)
-        .encode(75.0)
-        .to_vec();
+        let rgba = img.to_rgba8();
+        let (width, height) = rgba.dimensions();
 
-    let unique_filename = format!("{}.webp", Uuid::new_v4());
+        let webp_data = Encoder::from_rgba(&rgba, width, height)
+            .encode(compression_quality)
+            .to_vec();
+        (webp_data, "webp")
+    };
 
-    let b2_pod = env::var("B2_POD").map_err(|_| Html("Server configuration error".to_string()))?;
+    let unique_filename = format!("{}.{}", Uuid::new_v4(), extension);
+
     let image_url = format!(
         "https://f{}.backblazeb2.com/file/memelibre/{}",
         b2_pod, unique_filename
@@ -106,11 +120,11 @@ pub async fn handler(
     let response = client
         .post(&b2_credentials.upload_url)
         .header("Authorization", &b2_credentials.auth_token)
-        .header("Content-Length", webp_data.len())
+        .header("Content-Length", data.len())
         .header("Content-Type", "b2/x-auto")
         .header("X-Bz-Content-Sha1", "do_not_verify")
         .header("X-Bz-File-Name", &unique_filename)
-        .body(webp_data.clone())
+        .body(data.clone())
         .send()
         .await;
 

@@ -6,9 +6,9 @@
 - [ ] cache b2
 - [ ] check bucket setting for limit to MAX_FILE_SIZE
 - [ ] compress image before saving in bucket
-- [ ] convert image to webp
+- [ ] convert gif to animated webp
 - [ ] Enable CDN caching + compression  in bucket - Cache-Control: public, max-age=31536000 + Content-Encoding: gzip/br
-- [ ] improve upload view css
+- [x] improve upload view css
 - [ ] s3 keys for read and write
 - [ ] spike tower middleares - compression, timeout, etc - https://rust-api.dev/docs/part-1/tokio-hyper-axum/#the-middleware-pattern
 - [ ] update html error
@@ -16,6 +16,7 @@
 - [x] add gif
 - [x] add upload.html max weigth note
 - [x] check `name` in upload logic
+- [x] convert image to webp
 - [x] make s3 public read
 - [x] remove health controller
 - [x] resolve b2 authtoken
