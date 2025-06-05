@@ -8,50 +8,41 @@
 {% block body %}
     {% include "_navbar.html" %}
     {% include "_notification.html" %}
+    {{ memes | safe }}
 
-    <div class="main-container">
-      {% for meme in memes %}
-      <div class="meme-container">
-        <img class="meme" src="{{ meme.image_url }}" alt="memelibre" loading="lazy" />
-        <button onclick="sharePage(this)" data-id="{{ meme.id }}">🔗 Share</button>
-      </div>
-      {% endfor %}
-    </div>
-
-  <script>
-    function sharePage(button) {
-      const memeId = button.getAttribute("data-id");
-      const notificationContainer = document.getElementById("notification-container");
+    <script>
+      async function loadMoreMemes(lastId) {
+      const notificationContainer = document.getElementById(
+        "notification-container",
+      );
       const notification = document.getElementById("notification");
-      const shareUrl = `${window.location.origin}/meme/${memeId}`;
+      notification.textContent = "Loading...";
 
-      if (navigator.share) {
-        navigator.share({
-          title: document.title,
-          text: 'Check this out!',
-          url: shareUrl,
-        }).catch(() => {});
-      } else {
-        navigator.clipboard.writeText(shareUrl)
-          .then(() => {
-            notificationContainer.style.display = "block";
-            notification.textContent = "Link copied to clipboard!";
-
-            setTimeout(() => {
-              notificationContainer.style.display = "none";
-            }, 3000);
-          })
-          .catch(err => {
-            notificationContainer.style.display = "block";
-            notification.textContent = "Failed to copy link.";
-
-            setTimeout(() => {
-              notificationContainer.style.display = "none";
-            }, 3000);
-
-            console.error("Clipboard error:", err);
-          });
+      try {
+        const response = await fetch(`/load_more/${lastId}`);
+        const html = await response.text();
+        document.body.insertAdjacentHTML("beforeend", html);
+        notificationContainer.style.display = "none";
+        notification.textContent = "";
+      } catch {
+        notification.textContent = "Something went wrong.";
+        setTimeout(() => {
+          notificationContainer.style.display = "none";
+          notification.textContent = "";
+        }, 3000);
       }
     }
-</script>
+
+    function handleInfiniteScroll() {
+      const endOfPage =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight;
+      if (endOfPage) {
+        const memes = document.querySelectorAll(".meme-container");
+        const lastMeme = memes[memes.length - 1];
+        const lastId = lastMeme?.querySelector("button")?.dataset.id;
+        if (lastId) loadMoreMemes(lastId);
+      }
+    }
+    window.addEventListener("scroll", handleInfiniteScroll);
+    </script>
 {% endblock body %}

@@ -47,6 +47,7 @@ async fn main() {
         .nest_service("/public", ServeDir::new("src/public"))
         .merge(controllers::home::router())
         .nest("/meme", controllers::meme::router())
+        .nest("/load_more", controllers::load_more::router())
         .nest("/upload", controllers::upload::router())
         .with_state(app_state)
         .layer(NormalizePathLayer::trim_trailing_slash())

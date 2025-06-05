@@ -1,4 +1,9 @@
-use axum::{extract::State, response::Html, routing::get, Router};
+use axum::{
+    extract::{Path, State},
+    response::Html,
+    routing::get,
+    Router,
+};
 use serde::Serialize;
 use std::env;
 use std::sync::Arc;
@@ -13,10 +18,10 @@ struct Meme {
 }
 
 pub fn router() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(handler))
+    Router::new().route("/{last_id}", get(handler))
 }
 
-async fn handler(State(state): State<Arc<AppState>>) -> Html<String> {
+async fn handler(State(state): State<Arc<AppState>>, Path(last_id): Path<i32>) -> Html<String> {
     let limit = env::var("MEMES_PULL_LIMIT")
         .expect("Missing MEMES_PULL_LIMIT env var")
         .parse::<i64>()
@@ -24,43 +29,34 @@ async fn handler(State(state): State<Arc<AppState>>) -> Html<String> {
 
     let memes: Vec<Meme> = sqlx::query_as(
         "
-        SELECT id, image_url
-        FROM memes
+        SELECT id, image_url FROM memes
+        WHERE id < $1
         ORDER BY id DESC
-        LIMIT $1
+        LIMIT $2
         ",
     )
+    .bind(last_id)
     .bind(limit)
     .fetch_all(&state.pool)
     .await
-    .unwrap_or_else(|_| vec![]);
+    .unwrap_or_default();
 
-    let mut memes_html = String::new();
-    for meme in &memes {
+    let mut html_output = String::new();
+
+    for meme in memes {
         let mut context = Context::new();
-        context.insert("meme", meme);
+        context.insert("meme", &meme);
 
         let rendered = state
             .tera
             .render("_meme.html", &context)
             .unwrap_or_else(|e| {
-                eprintln!("Tera rendering error for meme id {}: {}", meme.id, e);
+                eprintln!("Tera rendering error: {}", e);
                 "<!-- Error rendering meme -->".to_string()
             });
 
-        memes_html.push_str(&rendered);
+        html_output.push_str(&rendered);
     }
 
-    let mut context = Context::new();
-    context.insert("memes", &memes_html);
-
-    let rendered = state
-        .tera
-        .render("home.html", &context)
-        .unwrap_or_else(|e| {
-            eprintln!("Tera rendering error: {}", e);
-            "Template error".to_string()
-        });
-
-    Html(rendered)
+    Html(html_output)
 }

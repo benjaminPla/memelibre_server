@@ -9,6 +9,7 @@
 - [ ] convert gif to animated webp
 - [ ] Enable CDN caching + compression  in bucket - Cache-Control: public, max-age=31536000 + Content-Encoding: gzip/br
 - [ ] s3 keys for read and write
+- [ ] translate to spanish
 - [ ] update html error
 - [x] add favicon
 - [x] add gif
