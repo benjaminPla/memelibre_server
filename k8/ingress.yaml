@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: memelibre-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/limit-rps: "10" # 10 requests per second
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5" # Burst up to 50 requests
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" # Redirect HTTP to HTTPS
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - memelibre.com
+        - www.memelibre.com
+      secretName: memelibre-tls-secret
+  rules:
+    - host: memelibre.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: memelibre
+                port:
+                  number: 80
+    - host: www.memelibre.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: memelibre
+                port:
+                  number: 80

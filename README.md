@@ -1,6 +1,7 @@
 # README
 
 ## docker postgres
+
 ```
 docker run --name memelibre-db \
   -e POSTGRES_USER=postgres \
@@ -8,6 +9,38 @@ docker run --name memelibre-db \
   -e POSTGRES_DB=memelibre \
   -p 5432:5432 \
   -d postgres
-  ```
+```
+
 ## backblaze
+
 - https://www.backblaze.com/apidocs/
+
+## k8
+
+basics
+```
+kubectl apply -f .
+kubectl delete -f .
+```
+
+switch in between kubectl context
+```
+kubectl config get-contexts
+kubectl config use-context <minikube|do-sao1-memelibre>
+```
+
+after changes on config or secret
+
+```
+kubectl rollout restart deployment memelibre
+
+```
+
+## my ip
+```
+curl ifconfig.me
+curl https://api.ipify.org
+```
+
+
+im using postgres:17

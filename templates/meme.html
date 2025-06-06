@@ -1,23 +1,33 @@
-<div class="meme-container">
-    <img class="meme" src="{{ meme.image_url }}" alt="memelibre" loading="lazy" />
-    <button onclick="sharePage(this)" data-id="{{ meme.id }}">🔗 Share</button>
-</div>
+{% extends "base.html" %}
 
-<script>
-  function sharePage(button) {
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/public/styles/meme.css" />
+{% endblock head %}
+
+{% block body %}
+    {% include "_navbar.html" %} 
+    {% include "_notification.html" %} 
+
+    {% if meme %}
+        {% include "_meme.html" %}
+    {% else %}
+        <p>Meme not found.</p>
+    {% endif %}
+
+  <script>
+  function sharePage() {
     const notificationContainer = document.getElementById("notification-container");
     const notification = document.getElementById("notification");
 
     if (navigator.share) {
       navigator.share({
         title: document.title,
-        text: 'Check this out!',
+        text: 'La inflación es siempre un fenómeno monetario',
         url: window.location.href,
       }).catch(() => {});
     } else {
-      const memeId = button.getAttribute("data-id");
-      const shareUrl = `${window.location.origin}/meme/${memeId}`;
-      navigator.clipboard.writeText(shareUrl)
+      navigator.clipboard.writeText(window.location.href)
         .then(() => {
           notificationContainer.style.display = "block";
           notification.textContent = "Link copied to clipboard!";
@@ -39,3 +49,4 @@
     }
   }
 </script>
+{% endblock body %}

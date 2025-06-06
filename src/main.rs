@@ -19,7 +19,7 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    let db_conn_string = env::var("DB_CONN_STRING").expect("Missing DB_CONN env var");
+    let db_conn_string = env::var("DB_CONN_STRING").expect("Missing DB_CONN_STRING env var");
     let db_max_conn = env::var("DB_MAX_CONN")
         .expect("Missing DB_MAX_CONN env var")
         .parse::<u32>()
@@ -39,12 +39,17 @@ async fn main() {
         .await
         .expect("Error initializing pool");
 
-    let tera = Tera::new("src/html/*").expect("Error initializing Tera");
+    let tera = Tera::new("templates/**/*").expect("Error initializing Tera");
 
     let app_state = Arc::new(AppState { pool, tera });
 
+    let public_dir = if std::path::Path::new("src/public").exists() {
+        "src/public"
+    } else {
+        "public"
+    };
     let app = Router::new()
-        .nest_service("/public", ServeDir::new("src/public"))
+        .nest_service("/public", ServeDir::new(public_dir))
         .merge(controllers::home::router())
         .nest("/meme", controllers::meme::router())
         .nest("/load_more", controllers::load_more::router())

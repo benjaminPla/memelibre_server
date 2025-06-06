@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: memelibre-config
+  namespace: default
+data:
+  COMPRESSION_QUALITY: "75"
+  DB_MAX_CONN: "10"
+  MAX_FILE_SIZE: "2097152"
+  MAX_REQUEST_SIZE: "5242880"
+  MEMES_PULL_LIMIT: "100"
+  PORT: "3000"
+  TIMEOUT_DURATION: "30"

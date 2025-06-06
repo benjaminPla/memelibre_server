@@ -1,8 +1,7 @@
 - [ ] add adds - Google AdSense
 - [ ] add delete, delete b2 too
-- [x] add inifite scroll
+- [ ] add k8 readiness probe
 - [ ] add loader on upload meme
-- [x] add metadata - media and SEO
 - [ ] add thiserror crate
 - [ ] cache b2
 - [ ] cache public files
@@ -14,6 +13,8 @@
 - [ ] update html error
 - [x] add favicon
 - [x] add gif
+- [x] add inifite scroll
+- [x] add metadata - media and SEO
 - [x] add share, individual view
 - [x] add upload.html max weigth note
 - [x] check `name` in upload logic

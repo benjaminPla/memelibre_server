@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memelibre
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: memelibre
+  template:
+    metadata:
+      labels:
+        app: memelibre
+    spec:
+      containers:
+        - name: memelibre
+          image: benjaminpla/memelibre:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: B2_APPLICATION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: memelibre-secret
+                  key: B2_APPLICATION_KEY
+            - name: B2_AUTHENTICATION_URL
+              valueFrom:
+                secretKeyRef:
+                  name: memelibre-secret
+                  key: B2_AUTHENTICATION_URL
+            - name: B2_BUCKET_ID
+              valueFrom:
+                secretKeyRef:
+                  name: memelibre-secret
+                  key: B2_BUCKET_ID
+            - name: B2_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: memelibre-secret
+                  key: B2_KEY_ID
+            - name: B2_POD
+              valueFrom:
+                secretKeyRef:
+                  name: memelibre-secret
+                  key: B2_POD
+            - name: DB_CONN_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: memelibre-secret
+                  key: DB_CONN_STRING
+            - name: COMPRESSION_QUALITY
+              valueFrom:
+                configMapKeyRef:
+                  name: memelibre-config
+                  key: COMPRESSION_QUALITY
+            - name: DB_MAX_CONN
+              valueFrom:
+                configMapKeyRef:
+                  name: memelibre-config
+                  key: DB_MAX_CONN
+            - name: MAX_FILE_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: memelibre-config
+                  key: MAX_FILE_SIZE
+            - name: MAX_REQUEST_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: memelibre-config
+                  key: MAX_REQUEST_SIZE
+            - name: MEMES_PULL_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: memelibre-config
+                  key: MEMES_PULL_LIMIT
+            - name: TIMEOUT_DURATION
+              valueFrom:
+                configMapKeyRef:
+                  name: memelibre-config
+                  key: TIMEOUT_DURATION
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: memelibre-config
+                  key: PORT
+          ports:
+            - containerPort: 3000

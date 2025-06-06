@@ -5,6 +5,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use chrono::Utc;
 use image::{ImageFormat, ImageReader};
 use memelibre;
 use reqwest::Client;
@@ -13,7 +14,6 @@ use std::env;
 use std::io::Cursor;
 use std::sync::Arc;
 use tera::Context;
-use uuid::Uuid;
 use webp::Encoder;
 
 #[derive(Serialize, sqlx::FromRow)]
@@ -102,7 +102,8 @@ pub async fn handler(
         (webp_data, "webp")
     };
 
-    let unique_filename = format!("{}.{}", Uuid::new_v4(), extension);
+    let timestamp = Utc::now().format("%Y-%m-%d-%H:%M:%S%.3f").to_string();
+    let unique_filename = format!("{}.{}", timestamp, extension);
 
     let image_url = format!(
         "https://f{}.backblazeb2.com/file/memelibre/{}",
