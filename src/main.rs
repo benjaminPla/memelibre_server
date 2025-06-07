@@ -1,4 +1,4 @@
-use axum::Router;
+use axum::{response::Redirect, Router};
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::env;
 use std::sync::Arc;
@@ -10,7 +10,6 @@ use tower_http::{
 };
 
 mod controllers;
-mod macros;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -19,28 +18,55 @@ pub struct AppState {
 }
 
 #[tokio::main]
-async fn main() {
-    let db_conn_string = env::var("DB_CONN_STRING").expect("Missing DB_CONN_STRING env var");
+async fn main() -> Result<(), Redirect> {
+    let db_conn_string = env::var("DB_CONN_STRING").map_err(|e| {
+        eprintln!("{}:{} - {}", file!(), line!(), e);
+        Redirect::to("/error")
+    })?;
     let db_max_conn = env::var("DB_MAX_CONN")
-        .expect("Missing DB_MAX_CONN env var")
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?
         .parse::<u32>()
-        .expect("Error parsing DB_MAX_CONN env var");
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?;
     let max_request_size = env::var("MAX_REQUEST_SIZE")
-        .expect("Missing MAX_REQUEST_SIZE env var")
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?
         .parse::<usize>()
-        .expect("Error parsing MAX_REQUEST_SIZE env var");
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?;
     let timeout_duration = env::var("TIMEOUT_DURATION")
-        .expect("Missing TIMEOUT_DURATION env var")
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?
         .parse::<u64>()
-        .expect("Error parsing TIMEOUT_DURATION env var");
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?;
 
     let pool = PgPoolOptions::new()
         .max_connections(db_max_conn)
         .connect(&db_conn_string)
         .await
-        .expect("Error initializing pool");
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?;
 
-    let tera = Tera::new("templates/**/*").expect("Error initializing Tera");
+    let tera = Tera::new("templates/**/*").map_err(|e| {
+        eprintln!("{}:{} - {}", file!(), line!(), e);
+        Redirect::to("/error")
+    })?;
 
     let app_state = Arc::new(AppState { pool, tera });
 
@@ -56,6 +82,7 @@ async fn main() {
         .nest("/load_more", controllers::load_more::router())
         .nest("/upload", controllers::upload::router())
         .nest("/delete", controllers::delete::router())
+        .nest("/error", controllers::error::router())
         .with_state(app_state)
         .layer(NormalizePathLayer::trim_trailing_slash())
         .layer(CorsLayer::permissive())
@@ -65,8 +92,14 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
-        .expect("Failed to bind to address");
-    axum::serve(listener, app)
-        .await
-        .expect("Error initializing server");
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?;
+    axum::serve(listener, app).await.map_err(|e| {
+        eprintln!("{}:{} - {}", file!(), line!(), e);
+        Redirect::to("/error")
+    })?;
+
+    Ok(())
 }
