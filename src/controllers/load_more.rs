@@ -1,5 +1,6 @@
 use axum::{
     extract::{Path, State},
+    http::StatusCode,
     response::Html,
     routing::get,
     Router,
@@ -21,11 +22,20 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new().route("/{last_id}", get(handler))
 }
 
-async fn handler(State(state): State<Arc<AppState>>, Path(last_id): Path<i32>) -> Html<String> {
+async fn handler(
+    State(state): State<Arc<AppState>>,
+    Path(last_id): Path<i32>,
+) -> Result<Html<String>, StatusCode> {
     let limit = env::var("MEMES_PULL_LIMIT")
-        .expect("Missing MEMES_PULL_LIMIT env var")
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?
         .parse::<i64>()
-        .expect("Error parsing MEMES_PULL_LIMIT env var");
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
     let memes: Vec<Meme> = sqlx::query_as(
         "
@@ -41,22 +51,20 @@ async fn handler(State(state): State<Arc<AppState>>, Path(last_id): Path<i32>) -
     .await
     .unwrap_or_default();
 
-    let mut html_output = String::new();
+    let mut memes_html = String::new();
 
-    for meme in memes {
+    for meme in &memes {
         let mut context = Context::new();
-        context.insert("meme", &meme);
+        context.insert("meme", meme);
 
-        let rendered = state
-            .tera
-            .render("_meme.html", &context)
-            .unwrap_or_else(|e| {
-                eprintln!("Tera rendering error: {}", e);
-                "<!-- Error rendering meme -->".to_string()
-            });
-
-        html_output.push_str(&rendered);
+        match state.tera.render("_meme.html", &context) {
+            Ok(rendered) => memes_html.push_str(&rendered),
+            Err(e) => {
+                eprintln!("Failed to render meme: {}", e);
+                continue;
+            }
+        }
     }
 
-    Html(html_output)
+    Ok(Html(memes_html))
 }

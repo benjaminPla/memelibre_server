@@ -33,7 +33,10 @@ async fn html(State(state): State<Arc<AppState>>) -> Result<Html<String>, Redire
     let rendered = state
         .tera
         .render("upload.html", &context)
-        .unwrap_or_else(|_| "Internal server error".to_string());
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?;
 
     Ok(Html(rendered))
 }
@@ -41,29 +44,39 @@ async fn html(State(state): State<Arc<AppState>>) -> Result<Html<String>, Redire
 pub async fn handler(
     State(state): State<Arc<AppState>>,
     mut multipart: Multipart,
-) -> Result<Redirect, Html<String>> {
+) -> Result<Redirect, Redirect> {
     let b2_pod = env::var("B2_POD").map_err(|_| Html("Server configuration error".to_string()))?;
     let compression_quality: f32 = env::var("COMPRESSION_QUALITY")
-        .map_err(|_| Html("Server configuration error".to_string()))?
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?
         .parse::<f32>()
-        .map_err(|_| Html("Server configuration error".to_string()))?
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?
         .clamp(0.0, 100.0);
 
     let mut file_data: Option<bytes::Bytes> = None;
 
-    while let Some(field) = multipart.next_field().await.map_err(|e| {
-        eprintln!("{}", e);
-        Html("Error reading file".to_string())
-    })? {
+    while let Some(field) = multipart.next_field().await
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?
+     {
         if field.name() == Some("file") {
-            file_data = Some(field.bytes().await.map_err(|e| {
-                eprintln!("{}", e);
-                Html("Error reading file".to_string())
-            })?);
+            file_data = Some(field.bytes().await
+        .map_err(|e| {
+            eprintln!("{}:{} - {}", file!(), line!(), e);
+            Redirect::to("/error")
+        })?)
+
         }
     }
 
-    let file_data = file_data.ok_or_else(|| Html("Missing file".to_string()))?;
+    let file_data = file_data.ok_or_else(|| Err(Html("Missing file".to_string())))?;
 
     let guessed_format = ImageReader::new(Cursor::new(&file_data))
         .with_guessed_format()

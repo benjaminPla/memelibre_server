@@ -8,7 +8,12 @@
 {% block body %}
     {% include "_navbar.html" %}
     {% include "_notification.html" %}
-    {{ memes | safe }}
+    {% if memes %}
+        {{ memes | safe }}
+    {% else %}
+        <h1>404</h1>
+        <p>NO HAY MEMES.</p>
+    {% endif %}
 
     <script>
       async function loadMoreMemes(lastId) {

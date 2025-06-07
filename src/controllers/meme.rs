@@ -1,6 +1,6 @@
 use axum::{
     extract::{Path, State},
-    response::Html,
+    response::{Html, Redirect},
     routing::get,
     Router,
 };
@@ -20,20 +20,23 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new().route("/{id}", get(handler))
 }
 
-async fn handler(State(state): State<Arc<AppState>>, Path(id): Path<i32>) -> Html<String> {
+async fn handler(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<i32>,
+) -> Result<Html<String>, Redirect> {
     let meme: Option<Meme> = sqlx::query_as("SELECT id, image_url FROM memes WHERE id = $1")
         .bind(id)
         .fetch_optional(&state.pool)
         .await
-        .unwrap_or(None);
+        .unwrap_or_default();
 
     let mut context = Context::new();
     context.insert("meme", &meme);
 
-    let rendered = state
-        .tera
-        .render("meme.html", &context)
-        .unwrap_or_else(|e| format!("Template error: {}", e));
+    let rendered = state.tera.render("meme.html", &context).map_err(|e| {
+        eprintln!("{}:{} - {}", file!(), line!(), e);
+        Redirect::to("/error")
+    })?;
 
-    Html(rendered)
+    Ok(Html(rendered))
 }

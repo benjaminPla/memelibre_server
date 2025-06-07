@@ -1,22 +1,11 @@
 use reqwest::Client;
 use serde::Deserialize;
 use std::env;
-use thiserror::Error;
 
 #[derive(Deserialize)]
 pub struct B2Credentials {
     pub auth_token: String,
     pub upload_url: String,
-}
-
-#[derive(Error, Debug)]
-pub enum B2Error {
-    #[error("Environment variable missing: {0}")]
-    EnvVarMissing(String),
-    #[error("B2 API request failed: {0}")]
-    RequestFailed(String),
-    #[error("Failed to parse B2 response: {0}")]
-    ParseFailed(String),
 }
 
 #[derive(Deserialize)]
@@ -45,15 +34,11 @@ struct UploadUrlResponse {
     upload_url: String,
 }
 
-pub async fn get_b2_token() -> Result<B2Credentials, B2Error> {
-    let b2_application_key = env::var("B2_APPLICATION_KEY")
-        .map_err(|_| B2Error::EnvVarMissing("B2_APPLICATION_KEY".to_string()))?;
-    let b2_authentication_url = env::var("B2_AUTHENTICATION_URL")
-        .map_err(|_| B2Error::EnvVarMissing("B2_AUTHENTICATION_URL".to_string()))?;
-    let b2_bucket_id =
-        env::var("B2_BUCKET_ID").map_err(|_| B2Error::EnvVarMissing("B2_BUCKET_ID".to_string()))?;
-    let b2_key_id =
-        env::var("B2_KEY_ID").map_err(|_| B2Error::EnvVarMissing("B2_KEY_ID".to_string()))?;
+pub async fn get_b2_token() -> Result<B2Credentials, String> {
+    let b2_application_key = env::var("B2_APPLICATION_KEY").map_err(|_| "Error")?;
+    let b2_authentication_url = env::var("B2_AUTHENTICATION_URL").map_err(|_| "Error")?;
+    let b2_bucket_id = env::var("B2_BUCKET_ID").map_err(|_| "Error")?;
+    let b2_key_id = env::var("B2_KEY_ID").map_err(|_| "Error")?;
 
     let client = Client::new();
 
@@ -62,10 +47,10 @@ pub async fn get_b2_token() -> Result<B2Credentials, B2Error> {
         .basic_auth(b2_key_id, Some(b2_application_key))
         .send()
         .await
-        .map_err(|e| B2Error::RequestFailed(format!("Auth request failed: {}", e)))?
+        .map_err(|_| "Error")?
         .json()
         .await
-        .map_err(|e| B2Error::ParseFailed(format!("Auth response parse failed: {}", e)))?;
+        .map_err(|_| "Error")?;
 
     let upload_url = format!(
         "{}/b2api/v4/b2_get_upload_url",
@@ -78,10 +63,10 @@ pub async fn get_b2_token() -> Result<B2Credentials, B2Error> {
         .json(&serde_json::json!({ "bucketId": b2_bucket_id }))
         .send()
         .await
-        .map_err(|e| B2Error::RequestFailed(format!("Upload URL request failed: {}", e)))?
+        .map_err(|_| "Error")?
         .json()
         .await
-        .map_err(|e| B2Error::ParseFailed(format!("Upload URL parse failed: {}", e)))?;
+        .map_err(|_| "Error")?;
 
     Ok(B2Credentials {
         auth_token: upload_resp.authorization_token,

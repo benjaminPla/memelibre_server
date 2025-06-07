@@ -28,7 +28,7 @@ async fn handler(
         .execute(&state.pool)
         .await
         .map_err(|e| {
-            eprintln!("DELETE_001: {}", e);
+            eprintln!("{}:{} - {}", file!(), line!(), e);
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
