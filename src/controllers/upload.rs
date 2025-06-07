@@ -48,36 +48,22 @@ pub async fn handler(
         .parse::<f32>()
         .map_err(|_| Html("Server configuration error".to_string()))?
         .clamp(0.0, 100.0);
-    let max_file_size: usize = env::var("MAX_FILE_SIZE")
-        .map_err(|_| Html("Server configuration error".to_string()))?
-        .parse()
-        .map_err(|_| Html("Server configuration error".to_string()))?;
 
     let mut file_data: Option<bytes::Bytes> = None;
 
-    while let Some(field) = multipart
-        .next_field()
-        .await
-        .map_err(|_| Html("Error processing form".to_string()))?
-    {
+    while let Some(field) = multipart.next_field().await.map_err(|e| {
+        eprintln!("{}", e);
+        Html("Error reading file".to_string())
+    })? {
         if field.name() == Some("file") {
-            file_data = Some(
-                field
-                    .bytes()
-                    .await
-                    .map_err(|_| Html("Error reading file".to_string()))?,
-            );
+            file_data = Some(field.bytes().await.map_err(|e| {
+                eprintln!("{}", e);
+                Html("Error reading file".to_string())
+            })?);
         }
     }
 
     let file_data = file_data.ok_or_else(|| Html("Missing file".to_string()))?;
-
-    if file_data.len() > max_file_size {
-        return Err(Html(format!(
-            "File is too large (max {} bytes)",
-            max_file_size
-        )));
-    }
 
     let guessed_format = ImageReader::new(Cursor::new(&file_data))
         .with_guessed_format()

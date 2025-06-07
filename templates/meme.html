@@ -12,41 +12,8 @@
     {% if meme %}
         {% include "_meme.html" %}
     {% else %}
-        <p>Meme not found.</p>
+        <h1>404</h1>
+        <p>NO HAY MEME.</p>
     {% endif %}
-
-  <script>
-  function sharePage() {
-    const notificationContainer = document.getElementById("notification-container");
-    const notification = document.getElementById("notification");
-
-    if (navigator.share) {
-      navigator.share({
-        title: document.title,
-        text: 'La inflación es siempre un fenómeno monetario',
-        url: window.location.href,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-        .then(() => {
-          notificationContainer.style.display = "block";
-          notification.textContent = "Link copied to clipboard!";
-
-          setTimeout(() => {
-          notificationContainer.style.display = "none";
-          }, 3000);
-        })
-        .catch(err => {
-          notificationContainer.style.display = "block";
-          notification.textContent = "Failed to copy link.";
-
-          setTimeout(() => {
-          notificationContainer.style.display = "none";
-          }, 3000);
-
-          console.error("Clipboard error:", err);
-        });
-    }
-  }
-</script>
 {% endblock body %}
+
