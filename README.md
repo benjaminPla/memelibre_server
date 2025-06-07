@@ -29,6 +29,12 @@ kubectl config get-contexts
 kubectl config use-context <minikube|do-sao1-memelibre>
 ```
 
+logs
+> since k8 do not merge logs from multiple pods into one single file you can get them all by
+```
+kubectl logs -l app=memelibre -n default
+```
+
 after changes on config or secret
 
 ```

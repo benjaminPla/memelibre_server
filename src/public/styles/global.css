@@ -47,7 +47,7 @@
 html {
   color: var(--text-primary);
   font-family: var(--font-primary);
-  font-size: clamp(var(--font-min-size), 2vw, var(--font-max-size));
+  font-size: clamp(var(--font-min-size), 10vw, var(--font-max-size));
   background-color: var(--primary-bg);
 }
 

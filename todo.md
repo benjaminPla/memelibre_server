@@ -1,16 +1,16 @@
 - [ ] add adds - Google AdSense
-- [ ] add delete, delete b2 too
+- [ ] add thiserror crate
+- [ ] fix share image
+- [ ] update html error
+
 - [ ] add k8 readiness probe
 - [ ] add loader on upload meme
-- [ ] add thiserror crate
-- [ ] cache b2
 - [ ] cache public files
+- [ ] check bucket optimization - bucket config + grok, things like cache and compression
 - [ ] check bucket setting for limit to MAX_FILE_SIZE
 - [ ] convert gif to animated webp
-- [ ] Enable CDN caching + compression  in bucket - Cache-Control: public, max-age=31536000 + Content-Encoding: gzip/br
-- [ ] s3 keys for read and write
-- [ ] translate to spanish
-- [ ] update html error
+- [ ] update delete endpoint to delete bucket resource too
+- [x] add delete endpoint
 - [x] add favicon
 - [x] add gif
 - [x] add inifite scroll
@@ -25,3 +25,4 @@
 - [x] remove health controller
 - [x] resolve b2 authtoken
 - [x] spike tower middleares
+- [x] translate to spanish
