@@ -10,6 +10,7 @@ use tower_http::{
 };
 
 mod controllers;
+mod macros;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -54,6 +55,7 @@ async fn main() {
         .nest("/meme", controllers::meme::router())
         .nest("/load_more", controllers::load_more::router())
         .nest("/upload", controllers::upload::router())
+        .nest("/delete", controllers::delete::router())
         .with_state(app_state)
         .layer(NormalizePathLayer::trim_trailing_slash())
         .layer(CorsLayer::permissive())
