@@ -1,4 +1,8 @@
-use axum::{response::Redirect, Router};
+use axum::{
+    response::Redirect,
+    routing::{delete,get, post},
+    Router,
+};
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::env;
 use std::sync::Arc;
@@ -77,12 +81,11 @@ async fn main() -> Result<(), Redirect> {
     };
     let app = Router::new()
         .nest_service("/public", ServeDir::new(public_dir))
-        .merge(controllers::home::router())
-        .nest("/meme", controllers::meme::router())
-        .nest("/load_more", controllers::load_more::router())
-        .nest("/upload", controllers::upload::router())
-        .nest("/delete", controllers::delete::router())
-        .nest("/error", controllers::error::router())
+        .route("/meme/get/all", get(controllers::meme_get_all::handler))
+        .route("/meme/get/{id}", get(controllers::meme_get_by_id::handler))
+        .route("/meme/post", post(controllers::meme_post::handler))
+        .route("/load_more/{id}", get(controllers::load_more::handler))
+        .route("/meme/delete/{id}", delete(controllers::delete::handler))
         .with_state(app_state)
         .layer(NormalizePathLayer::trim_trailing_slash())
         .layer(CorsLayer::permissive())

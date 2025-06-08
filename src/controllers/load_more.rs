@@ -2,8 +2,6 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::Html,
-    routing::get,
-    Router,
 };
 use serde::Serialize;
 use std::env;
@@ -18,11 +16,8 @@ struct Meme {
     image_url: String,
 }
 
-pub fn router() -> Router<Arc<AppState>> {
-    Router::new().route("/{last_id}", get(handler))
-}
 
-async fn handler(
+pub async fn handler(
     State(state): State<Arc<AppState>>,
     Path(last_id): Path<i32>,
 ) -> Result<Html<String>, StatusCode> {
