@@ -4,9 +4,17 @@ metadata:
   name: memelibre-ingress
   namespace: default
   annotations:
-    nginx.ingress.kubernetes.io/limit-rps: "10" # 10 requests per second
-    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5" # Burst up to 50 requests
-    nginx.ingress.kubernetes.io/ssl-redirect: "true" # Redirect HTTP to HTTPS
+    # ⚙️ Rate limiting - protect against abuse (basic API protection)
+    nginx.ingress.kubernetes.io/limit-rps: "10" # 10 requests per second per IP
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5" # allow bursts up to 50
+    # 🔒 Force HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" # redirect HTTP → HTTPS
+    # 🛡️ Security headers - protect against common web attacks
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header X-Content-Type-Options nosniff;
+      add_header X-Frame-Options DENY;
+      add_header X-XSS-Protection "1; mode=block";
+    # 📜 Cert-manager integration (autogenerate TLS cert from Let's Encrypt)
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx

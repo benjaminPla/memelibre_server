@@ -1,10 +1,6 @@
 - [ ] add adds - Google AdSense
-- [ ] add thiserror crate
-- [ ] fix share image
-- [ ] update html error
 
 - [ ] add k8 readiness probe
-- [ ] add loader on upload meme
 - [ ] cache public files
 - [ ] check bucket optimization - bucket config + grok, things like cache and compression
 - [ ] check bucket setting for limit to MAX_FILE_SIZE
@@ -20,9 +16,11 @@
 - [x] check `name` in upload logic
 - [x] compress image before saving in bucket
 - [x] convert image to webp
+- [x] fix share image
 - [x] improve upload view css
 - [x] make s3 public read
 - [x] remove health controller
 - [x] resolve b2 authtoken
 - [x] spike tower middleares
 - [x] translate to spanish
+- [x] update html error

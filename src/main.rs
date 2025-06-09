@@ -81,11 +81,11 @@ async fn main() -> Result<(), Redirect> {
     };
     let app = Router::new()
         .nest_service("/public", ServeDir::new(public_dir))
-        .route("/meme/get/all", get(controllers::meme_get_all::handler))
+        .route("/meme/get", get(controllers::meme_get_all::handler))
         .route("/meme/get/{id}", get(controllers::meme_get_by_id::handler))
         .route("/meme/post", post(controllers::meme_post::handler))
-        .route("/load_more/{id}", get(controllers::load_more::handler))
         .route("/meme/delete/{id}", delete(controllers::delete::handler))
+        .route("/load_more/{id}", get(controllers::load_more::handler))
         .with_state(app_state)
         .layer(NormalizePathLayer::trim_trailing_slash())
         .layer(CorsLayer::permissive())
