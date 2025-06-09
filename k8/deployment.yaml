@@ -50,26 +50,21 @@ spec:
                 secretKeyRef:
                   name: memelibre-secret
                   key: B2_POD
-            - name: DB_CONN_STRING
-              valueFrom:
-                secretKeyRef:
-                  name: memelibre-secret
-                  key: DB_CONN_STRING
             - name: COMPRESSION_QUALITY
               valueFrom:
                 configMapKeyRef:
                   name: memelibre-config
                   key: COMPRESSION_QUALITY
+            - name: DB_CONN_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: memelibre-secret
+                  key: DB_CONN_STRING
             - name: DB_MAX_CONN
               valueFrom:
                 configMapKeyRef:
                   name: memelibre-config
                   key: DB_MAX_CONN
-            - name: MAX_REQUEST_SIZE
-              valueFrom:
-                configMapKeyRef:
-                  name: memelibre-config
-                  key: MAX_REQUEST_SIZE
             - name: MEMES_PULL_LIMIT
               valueFrom:
                 configMapKeyRef:
@@ -80,10 +75,5 @@ spec:
                 configMapKeyRef:
                   name: memelibre-config
                   key: TIMEOUT_DURATION
-            - name: PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: memelibre-config
-                  key: PORT
           ports:
             - containerPort: 3000

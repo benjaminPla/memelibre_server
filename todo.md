@@ -6,6 +6,7 @@
 - [ ] check bucket setting for limit to MAX_FILE_SIZE
 - [ ] convert gif to animated webp
 - [ ] update delete endpoint to delete bucket resource too
+- [ ] update load_more - send json and convert to html in te client
 - [x] add delete endpoint
 - [x] add favicon
 - [x] add gif

@@ -6,7 +6,7 @@ use axum::{
 use serde::Serialize;
 use std::env;
 use std::sync::Arc;
-use tera::Context;
+use tera::{Context, Tera};
 
 use crate::AppState;
 
@@ -31,6 +31,11 @@ pub async fn handler(
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
+    let tera = Tera::new("src/templates/**/*").map_err(|e| {
+        eprintln!("{}:{} - {}", file!(), line!(), e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
     let memes: Vec<Meme> = sqlx::query_as(
         "
         SELECT id, image_url FROM memes
@@ -51,7 +56,7 @@ pub async fn handler(
         let mut context = Context::new();
         context.insert("meme", meme);
 
-        match state.tera.render("_meme.html", &context) {
+        match tera.render("_meme.html", &context) {
             Ok(rendered) => memes_html.push_str(&rendered),
             Err(e) => {
                 eprintln!("Failed to render meme: {}", e);
