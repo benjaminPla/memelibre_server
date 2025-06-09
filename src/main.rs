@@ -1,6 +1,6 @@
 use axum::{
     response::Redirect,
-    routing::{delete,get, post},
+    routing::{delete, get, post},
     Router,
 };
 use sqlx::postgres::{PgPool, PgPoolOptions};
@@ -10,7 +10,7 @@ use std::time::Duration;
 use tera::Tera;
 use tower_http::{
     compression::CompressionLayer, cors::CorsLayer, limit::RequestBodyLimitLayer,
-    normalize_path::NormalizePathLayer, services::ServeDir, timeout::TimeoutLayer,
+    timeout::TimeoutLayer,
 };
 
 mod controllers;
@@ -74,20 +74,13 @@ async fn main() -> Result<(), Redirect> {
 
     let app_state = Arc::new(AppState { pool, tera });
 
-    let public_dir = if std::path::Path::new("src/public").exists() {
-        "src/public"
-    } else {
-        "public"
-    };
     let app = Router::new()
-        .nest_service("/public", ServeDir::new(public_dir))
         .route("/meme/get", get(controllers::meme_get_all::handler))
         .route("/meme/get/{id}", get(controllers::meme_get_by_id::handler))
         .route("/meme/post", post(controllers::meme_post::handler))
         .route("/meme/delete/{id}", delete(controllers::delete::handler))
         .route("/load_more/{id}", get(controllers::load_more::handler))
         .with_state(app_state)
-        .layer(NormalizePathLayer::trim_trailing_slash())
         .layer(CorsLayer::permissive())
         .layer(CompressionLayer::new())
         .layer(TimeoutLayer::new(Duration::from_secs(timeout_duration)))

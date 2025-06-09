@@ -16,7 +16,6 @@ struct Meme {
     image_url: String,
 }
 
-
 pub async fn handler(
     State(state): State<Arc<AppState>>,
     Path(last_id): Path<i32>,
