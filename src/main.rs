@@ -59,10 +59,10 @@ async fn main() -> Result<(), Redirect> {
             "/api",
             Router::new()
                 .route("/meme/get", get(controllers::meme_get_all::handler))
-                .route("/meme/get/:id", get(controllers::meme_get_by_id::handler))
+                .route("/meme/get/{id}", get(controllers::meme_get_by_id::handler))
                 .route("/meme/post", post(controllers::meme_post::handler))
-                .route("/meme/delete/:id", delete(controllers::delete::handler))
-                .route("/load_more/:id", get(controllers::load_more::handler))
+                .route("/meme/delete/{id}", delete(controllers::delete::handler))
+                .route("/load_more/{id}", get(controllers::load_more::handler))
                 .with_state(app_state),
         )
         .layer(CorsLayer::permissive())
