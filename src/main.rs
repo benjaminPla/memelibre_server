@@ -1,5 +1,4 @@
 use axum::{
-    response::Redirect,
     routing::{delete, get, post},
     Router,
 };
@@ -17,40 +16,22 @@ pub struct AppState {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Redirect> {
-    let db_conn_string = env::var("DB_CONN_STRING").map_err(|e| {
-        eprintln!("{}:{} - {}", file!(), line!(), e);
-        Redirect::to("/error")
-    })?;
+async fn main() {
+    let db_conn_string = env::var("DB_CONN_STRING").expect("Missing DB_CONN_STRING env var");
     let db_max_conn = env::var("DB_MAX_CONN")
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            Redirect::to("/error")
-        })?
+        .expect("Missing DB_MAX_CONN env var")
         .parse::<u32>()
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            Redirect::to("/error")
-        })?;
+        .expect("Error parsing DB_MAX_CONN env var");
     let timeout_duration = env::var("TIMEOUT_DURATION")
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            Redirect::to("/error")
-        })?
+        .expect("Missing TIMEOUT_DURATION env var")
         .parse::<u64>()
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            Redirect::to("/error")
-        })?;
+        .expect("Error parsing TIMEOUT_DURATION env var");
 
     let pool = PgPoolOptions::new()
         .max_connections(db_max_conn)
         .connect(&db_conn_string)
         .await
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            Redirect::to("/error")
-        })?;
+        .expect("Error connecting to database");
 
     let app_state = Arc::new(AppState { pool });
 
@@ -71,14 +52,8 @@ async fn main() -> Result<(), Redirect> {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            Redirect::to("/error")
-        })?;
-    axum::serve(listener, app).await.map_err(|e| {
-        eprintln!("{}:{} - {}", file!(), line!(), e);
-        Redirect::to("/error")
-    })?;
-
-    Ok(())
+        .expect("Error binding to port 3000");
+    axum::serve(listener, app)
+        .await
+        .expect("Error starting server");
 }
