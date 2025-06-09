@@ -4,11 +4,12 @@
 
 postgres:17
 
-"
+```
 CREATE TABLE IF NOT EXISTS memes (
-id SERIAL PRIMARY KEY,
-image_url TEXT NOT NULL
-"
+    id SERIAL PRIMARY KEY,
+    image_url TEXT NOT NULL
+);
+```
 
 ## docker postgres
 

@@ -5,7 +5,7 @@ use axum::{
 };
 use chrono::Utc;
 use image::{ImageFormat, ImageReader};
-use memelibre;
+use memelibre_server::get_b2_token;
 use reqwest::Client;
 use serde::Serialize;
 use std::env;
@@ -112,7 +112,7 @@ pub async fn handler(
         b2_pod, unique_filename
     );
 
-    let b2_credentials = memelibre::get_b2_token().await.map_err(|e| {
+    let b2_credentials = get_b2_token().await.map_err(|e| {
         eprintln!("{}:{} - {}", file!(), line!(), e);
         (
             StatusCode::INTERNAL_SERVER_ERROR,
