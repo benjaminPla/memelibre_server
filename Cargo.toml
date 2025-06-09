@@ -1,8 +1,7 @@
 [package]
-name = "memelibre"
+name = "memelibre_server"
 version = "0.1.0"
 edition = "2021"
-default-run = "memelibre"
 
 [dependencies]
 axum = { version = "0.8.4", features = ["multipart"] }
