@@ -1,6 +1,9 @@
 use aws_config::SdkConfig;
 use aws_credential_types::{provider::SharedCredentialsProvider, Credentials};
-use aws_sdk_s3::{config::Region, Client};
+use aws_sdk_s3::{
+    config::{BehaviorVersion, Region},
+    Client,
+};
 use axum::http::status::StatusCode;
 use std::env;
 
@@ -30,6 +33,7 @@ pub async fn create_bucket_client() -> Result<Client, String> {
         .region(Some(Region::new(bucket_region)))
         .endpoint_url(bucket_endpoint)
         .credentials_provider(credentials_provider)
+        .behavior_version(BehaviorVersion::latest())
         .build();
 
     Ok(Client::new(&sdk_config))
