@@ -95,6 +95,7 @@ pub async fn handler(
         .key(&unique_filename)
         .body(ByteStream::from(data))
         .content_type(content_type)
+        .acl("public-read".into())
         .send()
         .await;
 
