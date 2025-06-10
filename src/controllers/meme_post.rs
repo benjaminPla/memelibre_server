@@ -85,7 +85,14 @@ pub async fn handler(
     let timestamp = Utc::now().format("%Y-%m-%d_%H:%M:%S%.3f").to_string();
     let unique_filename = format!("{}.{}", timestamp, extension);
 
-    let image_url = format!("https://{}.{}/{}", bucket_name, bucket_endpoint, unique_filename);
+    let image_url = format!(
+        "https://{}.{}/{}",
+        bucket_name,
+        bucket_endpoint
+            .strip_prefix("https://")
+            .ok_or_else(|| internal_error("BUCKET_ENDPOINT env var missing https:// prefix"))?,
+        unique_filename
+    );
 
     let bucket_client = create_bucket_client().await.map_err(internal_error)?;
 
