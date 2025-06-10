@@ -1,11 +1,8 @@
 - [ ] add adds - Google AdSense
 
 - [ ] add k8 readiness probe
-- [ ] cache public files
-- [ ] check bucket optimization - bucket config + grok, things like cache and compression
-- [ ] check bucket setting for limit to MAX_FILE_SIZE
 - [ ] convert gif to animated webp
-- [ ] update delete endpoint to delete bucket resource too
+- [ ] pass en var in state?
 - [ ] update load_more - send json and convert to html in te client
 - [x] add delete endpoint
 - [x] add favicon
@@ -24,4 +21,5 @@
 - [x] resolve b2 authtoken
 - [x] spike tower middleares
 - [x] translate to spanish
+- [x] update delete endpoint to delete bucket resource too
 - [x] update html error

@@ -1,12 +1,12 @@
 use crate::AppState;
+use aws_sdk_s3::primitives::ByteStream;
 use axum::{
     extract::{Multipart, State},
     http::status::StatusCode,
 };
 use chrono::Utc;
 use image::{ImageFormat, ImageReader};
-use memelibre_server::get_b2_token;
-use reqwest::Client;
+use memelibre_server::{create_bucket_client, internal_error};
 use serde::Serialize;
 use std::env;
 use std::io::Cursor;
@@ -22,48 +22,31 @@ pub async fn handler(
     State(state): State<Arc<AppState>>,
     mut multipart: Multipart,
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
-    let b2_pod = env::var("B2_POD").map_err(|e| {
-        eprintln!("{}:{} - {}", file!(), line!(), e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Internal server error".to_string(),
-        )
-    })?;
+    let bucket_endpoint = env::var("BUCKET_ENDPOINT").map_err(internal_error)?;
+    let bucket_name = env::var("BUCKET_NAME").map_err(internal_error)?;
+    let bucket_object_max_size = env::var("BUCKET_OBJECT_MAX_SIZE")
+        .map_err(internal_error)?
+        .parse::<usize>()
+        .map_err(internal_error)?;
+
     let compression_quality: f32 = env::var("COMPRESSION_QUALITY")
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Internal server error".to_string(),
-            )
-        })?
+        .map_err(internal_error)?
         .parse::<f32>()
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Internal server error".to_string(),
-            )
-        })?
+        .map_err(internal_error)?
         .clamp(0.0, 100.0);
 
     let mut file_data: Option<bytes::Bytes> = None;
 
-    while let Some(field) = multipart.next_field().await.map_err(|e| {
-        eprintln!("{}:{} - {}", file!(), line!(), e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Internal server error".to_string(),
-        )
-    })? {
+    while let Some(field) = multipart.next_field().await.map_err(internal_error)? {
         if field.name() == Some("file") {
-            file_data = Some(field.bytes().await.map_err(|e| {
-                eprintln!("{}:{} - {}", file!(), line!(), e);
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "Internal server error".to_string(),
-                )
-            })?);
+            let data = field.bytes().await.map_err(internal_error)?;
+            if data.len() > bucket_object_max_size {
+                return Err((
+                    StatusCode::BAD_REQUEST,
+                    format!("File size exceeds maximum limit"),
+                ));
+            }
+            file_data = Some(data);
         }
     }
 
@@ -77,8 +60,8 @@ pub async fn handler(
         })?
         .format();
 
-    let (data, extension) = if guessed_format == Some(ImageFormat::Gif) {
-        (file_data.to_vec(), "gif")
+    let (data, extension, content_type) = if guessed_format == Some(ImageFormat::Gif) {
+        (file_data.to_vec(), "gif", "image/gif")
     } else {
         let img = ImageReader::new(Cursor::new(&file_data))
             .with_guessed_format()
@@ -87,13 +70,7 @@ pub async fn handler(
                 (StatusCode::BAD_REQUEST, "Invalid format".to_string())
             })?
             .decode()
-            .map_err(|e| {
-                eprintln!("{}:{} - {}", file!(), line!(), e);
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "Internal server error".to_string(),
-                )
-            })?;
+            .map_err(internal_error)?;
 
         let rgba = img.to_rgba8();
         let (width, height) = rgba.dimensions();
@@ -101,59 +78,41 @@ pub async fn handler(
         let webp_data = Encoder::from_rgba(&rgba, width, height)
             .encode(compression_quality)
             .to_vec();
-        (webp_data, "webp")
+
+        (webp_data, "webp", "image/webp")
     };
 
-    let timestamp = Utc::now().format("%Y-%m-%d-%H:%M:%S%.3f").to_string();
+    let timestamp = Utc::now().format("%Y-%m-%d_%H:%M:%S%.3f").to_string();
     let unique_filename = format!("{}.{}", timestamp, extension);
 
-    let image_url = format!(
-        "https://f{}.backblazeb2.com/file/memelibre/{}",
-        b2_pod, unique_filename
-    );
+    let image_url = format!("{}/{}", bucket_endpoint, unique_filename);
 
-    let b2_credentials = get_b2_token().await.map_err(|e| {
-        eprintln!("{}:{} - {}", file!(), line!(), e);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Internal server error".to_string(),
-        )
-    })?;
+    let bucket_client = create_bucket_client().await.map_err(internal_error)?;
 
-    let client = Client::new();
-    let response = client
-        .post(&b2_credentials.upload_url)
-        .header("Authorization", &b2_credentials.auth_token)
-        .header("Content-Length", data.len())
-        .header("Content-Type", "b2/x-auto")
-        .header("X-Bz-Content-Sha1", "do_not_verify")
-        .header("X-Bz-File-Name", &unique_filename)
-        .body(data.clone())
+    let put_result = bucket_client
+        .put_object()
+        .bucket(&bucket_name)
+        .key(&unique_filename)
+        .body(ByteStream::from(data))
+        .content_type(content_type)
         .send()
         .await;
 
-    match response {
-        Ok(resp) if resp.status().is_success() => {
+    match put_result {
+        Ok(_) => {
             sqlx::query("INSERT INTO memes (image_url) VALUES ($1)")
                 .bind(&image_url)
                 .execute(&state.pool)
                 .await
-                .map_err(|e| {
-                    eprintln!("{}:{} - {}", file!(), line!(), e);
-                    (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "Internal server error".to_string(),
-                    )
-                })?;
+                .map_err(internal_error)?;
 
             Ok((StatusCode::CREATED, "Upload successful".to_string()))
         }
-
-        _ => {
-            eprintln!("{}:{} - upload failed", file!(), line!());
+        Err(err) => {
+            eprintln!("Upload failed: {:?}", err);
             Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
-                "Internal server error".to_string(),
+                "Upload failed".to_string(),
             ))
         }
     }

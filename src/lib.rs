@@ -1,75 +1,36 @@
-use reqwest::Client;
-use serde::Deserialize;
+use aws_config::SdkConfig;
+use aws_credential_types::{provider::SharedCredentialsProvider, Credentials};
+use aws_sdk_s3::{config::Region, Client};
+use axum::http::status::StatusCode;
 use std::env;
 
-#[derive(Deserialize)]
-pub struct B2Credentials {
-    pub auth_token: String,
-    pub upload_url: String,
+pub fn internal_error<E: std::fmt::Display>(err: E) -> (StatusCode, String) {
+    eprintln!("{}:{} - {}", file!(), line!(), err);
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "Internal server error".to_string(),
+    )
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct AuthResponse {
-    authorization_token: String,
-    api_info: ApiInfo,
-}
+pub async fn create_bucket_client() -> Result<Client, String> {
+    let bucket_endpoint =
+        env::var("BUCKET_ENDPOINT").map_err(|e| format!("{}:{} - {}", file!(), line!(), e))?;
+    let bucket_key =
+        env::var("BUCKET_KEY").map_err(|e| format!("{}:{} - {}", file!(), line!(), e))?;
+    let bucket_region =
+        env::var("BUCKET_REGION").map_err(|e| format!("{}:{} - {}", file!(), line!(), e))?;
+    let bucket_secret =
+        env::var("BUCKET_SECRET").map_err(|e| format!("{}:{} - {}", file!(), line!(), e))?;
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct ApiInfo {
-    storage_api: StorageApi,
-}
+    let credentials = Credentials::new(bucket_key, bucket_secret, None, None, "digitalocean");
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct StorageApi {
-    api_url: String,
-}
+    let credentials_provider = SharedCredentialsProvider::new(credentials);
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct UploadUrlResponse {
-    authorization_token: String,
-    upload_url: String,
-}
+    let sdk_config = SdkConfig::builder()
+        .region(Some(Region::new(bucket_region)))
+        .endpoint_url(bucket_endpoint)
+        .credentials_provider(credentials_provider)
+        .build();
 
-pub async fn get_b2_token() -> Result<B2Credentials, String> {
-    let b2_application_key = env::var("B2_APPLICATION_KEY").map_err(|_| "Error")?;
-    let b2_authentication_url = env::var("B2_AUTHENTICATION_URL").map_err(|_| "Error")?;
-    let b2_bucket_id = env::var("B2_BUCKET_ID").map_err(|_| "Error")?;
-    let b2_key_id = env::var("B2_KEY_ID").map_err(|_| "Error")?;
-
-    let client = Client::new();
-
-    let auth_resp: AuthResponse = client
-        .get(&b2_authentication_url)
-        .basic_auth(b2_key_id, Some(b2_application_key))
-        .send()
-        .await
-        .map_err(|_| "Error")?
-        .json()
-        .await
-        .map_err(|_| "Error")?;
-
-    let upload_url = format!(
-        "{}/b2api/v4/b2_get_upload_url",
-        auth_resp.api_info.storage_api.api_url
-    );
-
-    let upload_resp: UploadUrlResponse = client
-        .post(&upload_url)
-        .header("Authorization", &auth_resp.authorization_token)
-        .json(&serde_json::json!({ "bucketId": b2_bucket_id }))
-        .send()
-        .await
-        .map_err(|_| "Error")?
-        .json()
-        .await
-        .map_err(|_| "Error")?;
-
-    Ok(B2Credentials {
-        auth_token: upload_resp.authorization_token,
-        upload_url: upload_resp.upload_url,
-    })
+    Ok(Client::new(&sdk_config))
 }
