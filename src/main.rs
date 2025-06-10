@@ -53,6 +53,7 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
         .expect("Error binding to port 3000");
+
     axum::serve(listener, app)
         .await
         .expect("Error starting server");
