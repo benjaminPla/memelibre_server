@@ -42,7 +42,7 @@ pub async fn handler(
             let data = field.bytes().await.map_err(internal_error)?;
             if data.len() > bucket_object_max_size {
                 return Err((
-                    StatusCode::BAD_REQUEST,
+                    StatusCode::PAYLOAD_TOO_LARGE,
                     format!("File size exceeds maximum limit"),
                 ));
             }
