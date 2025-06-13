@@ -20,7 +20,7 @@ pub async fn handler(
 ) -> Result<StatusCode, StatusCode> {
     let meme = sqlx::query_as::<_, Meme>("SELECT id, image_url FROM memes WHERE id = $1")
         .bind(id)
-        .fetch_optional(&state.pool)
+        .fetch_optional(&state.db)
         .await
         .map_err(|e| {
             eprintln!("{}:{} - {}", file!(), line!(), e);
@@ -35,14 +35,9 @@ pub async fn handler(
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    let bucket_name = std::env::var("BUCKET_NAME").map_err(|e| {
-        eprintln!("{}:{} - {}", file!(), line!(), e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
-
     bucket_client
         .delete_object()
-        .bucket(bucket_name)
+        .bucket(&state.config.bucket_name)
         .key(object_key)
         .send()
         .await
@@ -53,7 +48,7 @@ pub async fn handler(
 
     let meme_deleted = sqlx::query("DELETE FROM memes WHERE id = $1")
         .bind(id)
-        .execute(&state.pool)
+        .execute(&state.db)
         .await
         .map_err(|e| {
             eprintln!("{}:{} - {}", file!(), line!(), e);

@@ -3,37 +3,31 @@ use axum::{
     Router,
 };
 use sqlx::postgres::{PgPool, PgPoolOptions};
-use std::env;
 use std::sync::Arc;
 use std::time::Duration;
 use tower_http::{compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer};
 
 mod controllers;
+mod models;
 
 #[derive(Clone)]
 pub struct AppState {
-    pool: PgPool,
+    config: models::Config,
+    db: PgPool,
 }
 
 #[tokio::main]
 async fn main() {
-    let db_conn_string = env::var("DB_CONN_STRING").expect("Missing DB_CONN_STRING env var");
-    let db_max_conn = env::var("DB_MAX_CONN")
-        .expect("Missing DB_MAX_CONN env var")
-        .parse::<u32>()
-        .expect("Error parsing DB_MAX_CONN env var");
-    let timeout_duration = env::var("TIMEOUT_DURATION")
-        .expect("Missing TIMEOUT_DURATION env var")
-        .parse::<u64>()
-        .expect("Error parsing TIMEOUT_DURATION env var");
+    let config = models::Config::from_env().expect("Error creating Config");
+    let timeout_duration = config.timeout_duration;
 
-    let pool = PgPoolOptions::new()
-        .max_connections(db_max_conn)
-        .connect(&db_conn_string)
+    let db = PgPoolOptions::new()
+        .max_connections(config.db_max_conn)
+        .connect(&config.db_conn_string)
         .await
         .expect("Error connecting to database");
 
-    let app_state = Arc::new(AppState { pool });
+    let app_state = Arc::new(AppState { config, db });
 
     let app = Router::new()
         .nest(

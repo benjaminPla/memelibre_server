@@ -8,7 +8,6 @@ use chrono::Utc;
 use image::{ImageFormat, ImageReader};
 use memelibre_server::{create_bucket_client, internal_error};
 use serde::Serialize;
-use std::env;
 use std::io::Cursor;
 use std::sync::Arc;
 use webp::Encoder;
@@ -22,25 +21,12 @@ pub async fn handler(
     State(state): State<Arc<AppState>>,
     mut multipart: Multipart,
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
-    let bucket_endpoint = env::var("BUCKET_ENDPOINT").map_err(internal_error)?;
-    let bucket_name = env::var("BUCKET_NAME").map_err(internal_error)?;
-    let bucket_object_max_size = env::var("BUCKET_OBJECT_MAX_SIZE")
-        .map_err(internal_error)?
-        .parse::<usize>()
-        .map_err(internal_error)?;
-
-    let compression_quality: f32 = env::var("COMPRESSION_QUALITY")
-        .map_err(internal_error)?
-        .parse::<f32>()
-        .map_err(internal_error)?
-        .clamp(0.0, 100.0);
-
     let mut file_data: Option<bytes::Bytes> = None;
 
     while let Some(field) = multipart.next_field().await.map_err(internal_error)? {
         if field.name() == Some("file") {
             let data = field.bytes().await.map_err(internal_error)?;
-            if data.len() > bucket_object_max_size {
+            if data.len() > state.config.bucket_object_max_size {
                 return Err((
                     StatusCode::PAYLOAD_TOO_LARGE,
                     format!("File size exceeds maximum limit"),
@@ -76,7 +62,7 @@ pub async fn handler(
         let (width, height) = rgba.dimensions();
 
         let webp_data = Encoder::from_rgba(&rgba, width, height)
-            .encode(compression_quality)
+            .encode(state.config.compression_quality)
             .to_vec();
 
         (webp_data, "webp", "image/webp")
@@ -87,8 +73,10 @@ pub async fn handler(
 
     let image_url = format!(
         "https://{}.{}/{}",
-        bucket_name,
-        bucket_endpoint
+        &state.config.bucket_name,
+        &state
+            .config
+            .bucket_endpoint
             .strip_prefix("https://")
             .ok_or_else(|| internal_error("BUCKET_ENDPOINT env var missing https:// prefix"))?,
         unique_filename
@@ -98,7 +86,7 @@ pub async fn handler(
 
     let put_result = bucket_client
         .put_object()
-        .bucket(&bucket_name)
+        .bucket(&state.config.bucket_name)
         .key(&unique_filename)
         .body(ByteStream::from(data))
         .content_type(content_type)
@@ -110,7 +98,7 @@ pub async fn handler(
         Ok(_) => {
             sqlx::query("INSERT INTO memes (image_url) VALUES ($1)")
                 .bind(&image_url)
-                .execute(&state.pool)
+                .execute(&state.db)
                 .await
                 .map_err(internal_error)?;
 

@@ -1,8 +1,6 @@
-- [ ] add adds - Google AdSense
-
 - [ ] add k8 readiness probe
+- [ ] add watermark
 - [ ] convert gif to animated webp
-- [ ] pass en var in state?
 - [ ] update load_more - send json and convert to html in te client
 - [x] add delete endpoint
 - [x] add favicon
@@ -17,6 +15,7 @@
 - [x] fix share image
 - [x] improve upload view css
 - [x] make s3 public read
+- [x] pass en var in state?
 - [x] remove health controller
 - [x] resolve b2 authtoken
 - [x] spike tower middleares

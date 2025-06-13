@@ -4,7 +4,6 @@ use axum::{
     response::Html,
 };
 use serde::Serialize;
-use std::env;
 use std::sync::Arc;
 use tera::{Context, Tera};
 
@@ -20,17 +19,6 @@ pub async fn handler(
     State(state): State<Arc<AppState>>,
     Path(last_id): Path<i32>,
 ) -> Result<Html<String>, StatusCode> {
-    let limit = env::var("MEMES_PULL_LIMIT")
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?
-        .parse::<i64>()
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
-
     let tera = Tera::new("src/templates/**/*").map_err(|e| {
         eprintln!("{}:{} - {}", file!(), line!(), e);
         StatusCode::INTERNAL_SERVER_ERROR
@@ -45,8 +33,8 @@ pub async fn handler(
         ",
     )
     .bind(last_id)
-    .bind(limit)
-    .fetch_all(&state.pool)
+    .bind(&state.config.memes_pull_limit)
+    .fetch_all(&state.db)
     .await
     .unwrap_or_default();
 
