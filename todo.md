@@ -21,4 +21,5 @@
 - [x] spike tower middleares
 - [x] translate to spanish
 - [x] update delete endpoint to delete bucket resource too
+- [x] update error handler code
 - [x] update html error

@@ -1,3 +1,5 @@
+use crate::http_error;
+use crate::AppState;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -6,8 +8,6 @@ use axum::{
 use serde::Serialize;
 use std::sync::Arc;
 use tera::{Context, Tera};
-
-use crate::AppState;
 
 #[derive(Serialize, sqlx::FromRow)]
 struct Meme {
@@ -18,11 +18,9 @@ struct Meme {
 pub async fn handler(
     State(state): State<Arc<AppState>>,
     Path(last_id): Path<i32>,
-) -> Result<Html<String>, StatusCode> {
-    let tera = Tera::new("src/templates/**/*").map_err(|e| {
-        eprintln!("{}:{} - {}", file!(), line!(), e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+) -> Result<Html<String>, (StatusCode, String)> {
+    let tera = Tera::new("src/templates/**/*")
+        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     let memes: Vec<Meme> = sqlx::query_as(
         "
@@ -36,7 +34,7 @@ pub async fn handler(
     .bind(&state.config.memes_pull_limit)
     .fetch_all(&state.db)
     .await
-    .unwrap_or_default();
+    .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     let mut memes_html = String::new();
 

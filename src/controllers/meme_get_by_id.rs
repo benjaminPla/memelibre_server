@@ -1,9 +1,9 @@
+use crate::http_error;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::Json,
 };
-use memelibre_server::internal_error;
 use serde::Serialize;
 use std::sync::Arc;
 
@@ -23,8 +23,7 @@ pub async fn handler(
         .bind(id)
         .fetch_optional(&state.db)
         .await
-        .map_err(internal_error)?;
+        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
-    meme.map(Json)
-        .ok_or((StatusCode::NOT_FOUND, "Not found".to_string()))
+    meme.map(Json).ok_or(http_error!(StatusCode::NOT_FOUND))
 }

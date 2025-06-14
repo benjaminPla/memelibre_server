@@ -8,6 +8,7 @@ use std::time::Duration;
 use tower_http::{compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer};
 
 mod controllers;
+mod macros;
 mod models;
 
 #[derive(Clone)]

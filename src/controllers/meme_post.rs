@@ -1,3 +1,4 @@
+use crate::http_error;
 use crate::AppState;
 use aws_sdk_s3::primitives::ByteStream;
 use axum::{
@@ -6,7 +7,7 @@ use axum::{
 };
 use chrono::Utc;
 use image::{ImageFormat, ImageReader};
-use memelibre_server::{create_bucket_client, internal_error};
+use memelibre_server::create_bucket_client;
 use serde::Serialize;
 use std::io::Cursor;
 use std::sync::Arc;
@@ -23,14 +24,19 @@ pub async fn handler(
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
     let mut file_data: Option<bytes::Bytes> = None;
 
-    while let Some(field) = multipart.next_field().await.map_err(internal_error)? {
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?
+    {
         if field.name() == Some("file") {
-            let data = field.bytes().await.map_err(internal_error)?;
+            let data = field
+                .bytes()
+                .await
+                .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
+
             if data.len() > state.config.bucket_object_max_size {
-                return Err((
-                    StatusCode::PAYLOAD_TOO_LARGE,
-                    format!("File size exceeds maximum limit"),
-                ));
+                return Err(http_error!(StatusCode::PAYLOAD_TOO_LARGE));
             }
             file_data = Some(data);
         }
@@ -40,10 +46,7 @@ pub async fn handler(
 
     let guessed_format = ImageReader::new(Cursor::new(&file_data))
         .with_guessed_format()
-        .map_err(|e| {
-            eprintln!("{}:{} - {}", file!(), line!(), e);
-            (StatusCode::BAD_REQUEST, "Invalid format".to_string())
-        })?
+        .map_err(|_| http_error!(StatusCode::BAD_REQUEST, "Invalid image format"))?
         .format();
 
     let (data, extension, content_type) = if guessed_format == Some(ImageFormat::Gif) {
@@ -51,12 +54,9 @@ pub async fn handler(
     } else {
         let img = ImageReader::new(Cursor::new(&file_data))
             .with_guessed_format()
-            .map_err(|e| {
-                eprintln!("{}:{} - {}", file!(), line!(), e);
-                (StatusCode::BAD_REQUEST, "Invalid format".to_string())
-            })?
+            .map_err(|_| http_error!(StatusCode::BAD_REQUEST, "Invalid image format"))?
             .decode()
-            .map_err(internal_error)?;
+            .map_err(|_| http_error!(StatusCode::BAD_REQUEST, "Invalid image format"))?;
 
         let rgba = img.to_rgba8();
         let (width, height) = rgba.dimensions();
@@ -78,11 +78,16 @@ pub async fn handler(
             .config
             .bucket_endpoint
             .strip_prefix("https://")
-            .ok_or_else(|| internal_error("BUCKET_ENDPOINT env var missing https:// prefix"))?,
+            .ok_or_else(|| http_error!(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "BUCKET_ENDPOINT env var missing https:// prefix"
+            ))?,
         unique_filename
     );
 
-    let bucket_client = create_bucket_client().await.map_err(internal_error)?;
+    let bucket_client = create_bucket_client()
+        .await
+        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     let put_result = bucket_client
         .put_object()
@@ -100,16 +105,10 @@ pub async fn handler(
                 .bind(&image_url)
                 .execute(&state.db)
                 .await
-                .map_err(internal_error)?;
+                .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
             Ok((StatusCode::CREATED, "Upload successful".to_string()))
         }
-        Err(err) => {
-            eprintln!("Upload failed: {:?}", err);
-            Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Upload failed".to_string(),
-            ))
-        }
+        Err(err) => Err(http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: err)),
     }
 }
