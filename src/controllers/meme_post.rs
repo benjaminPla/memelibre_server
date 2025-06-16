@@ -8,15 +8,9 @@ use axum::{
 use chrono::Utc;
 use image::{ImageFormat, ImageReader};
 use memelibre_server::create_bucket_client;
-use serde::Serialize;
 use std::io::Cursor;
 use std::sync::Arc;
 use webp::Encoder;
-
-#[derive(Serialize, sqlx::FromRow)]
-struct Meme {
-    image_url: String,
-}
 
 pub async fn handler(
     State(state): State<Arc<AppState>>,

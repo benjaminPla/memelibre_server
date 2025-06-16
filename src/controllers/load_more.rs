@@ -1,19 +1,13 @@
 use crate::http_error;
+use crate::models::Meme;
 use crate::AppState;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::Html,
 };
-use serde::Serialize;
 use std::sync::Arc;
 use tera::{Context, Tera};
-
-#[derive(Serialize, sqlx::FromRow)]
-struct Meme {
-    id: i32,
-    image_url: String,
-}
 
 pub async fn handler(
     State(state): State<Arc<AppState>>,

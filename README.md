@@ -33,6 +33,8 @@ basics
 ```
 kubectl apply -f .
 kubectl delete -f .
+
+kubectl rollout restart deployment/memelibre-server
 ```
 
 switch in between kubectl context

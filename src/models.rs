@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::env;
 
 #[derive(Clone)]
@@ -47,4 +48,10 @@ impl Config {
             timeout_duration: get_and_parse_env_var("TIMEOUT_DURATION")?,
         })
     }
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+pub struct Meme {
+    pub id: i32,
+    pub image_url: String,
 }
