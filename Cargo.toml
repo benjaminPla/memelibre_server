@@ -13,7 +13,6 @@ chrono = "0.4.41"
 image = "0.25.6"
 serde = { version = "1.0.219", features = ["derive"] }
 sqlx = { version = "0.8.6", features = ["chrono", "macros", "postgres", "runtime-tokio-rustls"] }
-tera = "1.20.0"
 tokio = { version = "1.45.1", features = ["full"] }
 tower-http = { version = "0.6.6", features = ["compression-gzip", "cors", "fs", "limit", "normalize-path", "set-header", "set-status", "timeout"] }
 webp = "0.3.0"

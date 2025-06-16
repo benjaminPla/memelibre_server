@@ -1,11 +1,16 @@
 use axum::{
+    http::HeaderValue,
     routing::{delete, get, post},
     Router,
 };
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::sync::Arc;
 use std::time::Duration;
-use tower_http::{compression::CompressionLayer, cors::CorsLayer, timeout::TimeoutLayer};
+use tower_http::{
+    compression::CompressionLayer,
+    cors::{AllowOrigin, Any, CorsLayer},
+    timeout::TimeoutLayer,
+};
 
 mod controllers;
 mod macros;
@@ -21,6 +26,13 @@ pub struct AppState {
 async fn main() {
     let config = models::Config::from_env().expect("Error creating Config");
     let timeout_duration = config.timeout_duration;
+    let cors = CorsLayer::new()
+        .allow_origin(AllowOrigin::list([
+            "https://memelibre.com".parse::<HeaderValue>().unwrap(),
+            "http://memelibre.com".parse::<HeaderValue>().unwrap(),
+        ]))
+        .allow_methods(Any)
+        .allow_headers(Any);
 
     let db = PgPoolOptions::new()
         .max_connections(config.db_max_conn)
@@ -41,7 +53,8 @@ async fn main() {
                 .route("/meme/post", post(controllers::meme_post::handler))
                 .with_state(app_state),
         )
-        .layer(CorsLayer::permissive())
+        // .layer(CorsLayer::permissive())
+        .layer(cors)
         .layer(CompressionLayer::new())
         .layer(TimeoutLayer::new(Duration::from_secs(timeout_duration)));
 
