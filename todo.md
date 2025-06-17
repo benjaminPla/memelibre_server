@@ -1,7 +1,4 @@
-- [ ] add k8 readiness probe
 - [ ] add watermark
-- [ ] convert gif to animated webp
-- [ ] update load_more - send json and convert to html in te client
 - [x] add delete endpoint
 - [x] add favicon
 - [x] add gif
@@ -23,3 +20,4 @@
 - [x] update delete endpoint to delete bucket resource too
 - [x] update error handler code
 - [x] update html error
+- [x] update load_more - send json and convert to html in te client

@@ -22,10 +22,6 @@ docker run --name memelibre-db \
   -d postgres
 ```
 
-## backblaze
-
-- https://www.backblaze.com/apidocs/
-
 ## k8
 
 basics
