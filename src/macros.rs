@@ -4,11 +4,11 @@ macro_rules! http_error {
         use axum::http::StatusCode;
 
         let message = match $status {
-            StatusCode::NOT_FOUND => "Not found",
-            StatusCode::BAD_REQUEST => "Bad request",
-            StatusCode::PAYLOAD_TOO_LARGE => "Request payload too large",
             StatusCode::INTERNAL_SERVER_ERROR => "Internal server error",
-            _ => "An error occurred",
+            StatusCode::NOT_FOUND => "Not found",
+            StatusCode::PAYLOAD_TOO_LARGE => "Request payload too large",
+            StatusCode::UNAUTHORIZED => "Unauthorized",
+            _ => "Internal server error",
         };
 
         eprintln!(

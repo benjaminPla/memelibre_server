@@ -7,7 +7,7 @@ use std::sync::Arc;
 pub async fn handler(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Vec<Meme>>, (StatusCode, String)> {
-    let memes = sqlx::query_as::<_, Meme>(
+    let memes: Vec<Meme> = sqlx::query_as(
         "
         SELECT id, image_url
         FROM memes

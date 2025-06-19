@@ -12,7 +12,7 @@ pub async fn handler(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i32>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let meme = sqlx::query_as::<_, Meme>("SELECT id, image_url FROM memes WHERE id = $1")
+    let meme: Meme = sqlx::query_as("SELECT id, image_url FROM memes WHERE id = $1")
         .bind(id)
         .fetch_optional(&state.db)
         .await

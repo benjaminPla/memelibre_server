@@ -46,6 +46,8 @@ async fn main() {
         .nest(
             "/api",
             Router::new()
+                .route("/auth", get(controllers::auth::handler))
+                .route("/auth/callback", get(controllers::auth_callback::handler))
                 .route("/load_more/{id}", get(controllers::load_more::handler))
                 .route("/meme/delete/{id}", delete(controllers::delete::handler))
                 .route("/meme/get", get(controllers::meme_get_all::handler))
@@ -53,7 +55,6 @@ async fn main() {
                 .route("/meme/post", post(controllers::meme_post::handler))
                 .with_state(app_state),
         )
-        // .layer(CorsLayer::permissive())
         .layer(cors)
         .layer(CompressionLayer::new())
         .layer(TimeoutLayer::new(Duration::from_secs(timeout_duration)));

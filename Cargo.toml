@@ -8,9 +8,14 @@ aws-config = "1.6.3"
 aws-credential-types = "1.2.3"
 aws-sdk-s3 = { version = "1.91.0", features = ["behavior-version-latest"] }
 axum = { version = "0.8.4", features = ["multipart"] }
+axum-extra = { version = "0.10.1", features = ["cookie"] }
 bytes = "1.10.1"
 chrono = "0.4.41"
+cookie = "0.18.1"
 image = "0.25.6"
+jsonwebtoken = "9.3.1"
+rand = "0.9.1"
+reqwest = { version = "0.12.20", features = ["json"] }
 serde = { version = "1.0.219", features = ["derive"] }
 sqlx = { version = "0.8.6", features = ["chrono", "macros", "postgres", "runtime-tokio-rustls"] }
 tokio = { version = "1.45.1", features = ["full"] }

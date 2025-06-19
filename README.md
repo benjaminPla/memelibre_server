@@ -9,6 +9,12 @@ CREATE TABLE IF NOT EXISTS memes (
     id SERIAL PRIMARY KEY,
     image_url TEXT NOT NULL
 );
+
+CREATE TABLE users (
+    id VARCHAR(32) PRIMARY KEY,
+    is_admin BOOLEAN DEFAULT FALSE,
+    username VARCHAR(32) NOT NULL
+);
 ```
 
 ## docker postgres

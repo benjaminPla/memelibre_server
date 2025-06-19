@@ -1,4 +1,6 @@
 - [ ] add watermark
+- [ ] remove cookie after error during auth/callback?
+- [ ] update oauth state - remove cookie
 - [x] add delete endpoint
 - [x] add favicon
 - [x] add gif
@@ -19,5 +21,6 @@
 - [x] translate to spanish
 - [x] update delete endpoint to delete bucket resource too
 - [x] update error handler code
+- [x] update `google_id` users VARCHAR
 - [x] update html error
 - [x] update load_more - send json and convert to html in te client

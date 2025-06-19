@@ -1,3 +1,5 @@
+pub mod auth;
+pub mod auth_callback;
 pub mod delete;
 pub mod load_more;
 pub mod meme_get_all;
