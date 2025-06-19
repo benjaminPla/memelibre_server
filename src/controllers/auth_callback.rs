@@ -189,7 +189,7 @@ pub async fn handler(
     let session_token = create_user_session(&state, &user_info).await?;
 
     // Step 6: Set session cookie and redirect
-    let session_cookie = Cookie::build(("session", session_token))
+    let session_cookie = Cookie::build(("session_token", session_token))
         .http_only(true)
         .max_age(cookie::time::Duration::days(15))
         .path("/")

@@ -1,5 +1,6 @@
 use axum::{
     http::HeaderValue,
+    middleware,
     routing::{delete, get, post},
     Router,
 };
@@ -14,6 +15,7 @@ use tower_http::{
 
 mod controllers;
 mod macros;
+mod middlewares;
 mod models;
 
 #[derive(Clone)]
@@ -42,17 +44,36 @@ async fn main() {
 
     let app_state = Arc::new(AppState { config, db });
 
+    // Auth routes
+    let auth_routes = Router::new()
+        .route("/", get(controllers::auth::handler))
+        .route("/callback", get(controllers::auth_callback::handler));
+
+    // Meme routes
+    let meme_routes = Router::new()
+        .route("/get", get(controllers::meme_get_all::handler))
+        .route("/get/{id}", get(controllers::meme_get_by_id::handler))
+        .route("/post", post(controllers::meme_post::handler))
+        .route(
+            "/delete/{id}",
+            delete(controllers::delete::handler)
+                .layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    middlewares::with_is_admin::handler,
+                ))
+                .layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    middlewares::with_auth::handler,
+                )),
+        );
+
     let app = Router::new()
         .nest(
             "/api",
             Router::new()
-                .route("/auth", get(controllers::auth::handler))
-                .route("/auth/callback", get(controllers::auth_callback::handler))
+                .nest("/auth", auth_routes)
+                .nest("/meme", meme_routes)
                 .route("/load_more/{id}", get(controllers::load_more::handler))
-                .route("/meme/delete/{id}", delete(controllers::delete::handler))
-                .route("/meme/get", get(controllers::meme_get_all::handler))
-                .route("/meme/get/{id}", get(controllers::meme_get_by_id::handler))
-                .route("/meme/post", post(controllers::meme_post::handler))
                 .with_state(app_state),
         )
         .layer(cors)

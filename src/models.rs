@@ -73,7 +73,7 @@ pub struct User {
     pub username: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct JWTClaims {
     pub exp: usize,
     pub is_admin: bool,

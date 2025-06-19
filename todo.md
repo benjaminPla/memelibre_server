@@ -1,6 +1,7 @@
 - [ ] add watermark
 - [ ] remove cookie after error during auth/callback?
 - [ ] update oauth state - remove cookie
+- [ ] update with_auth jwt error handling
 - [x] add delete endpoint
 - [x] add favicon
 - [x] add gif
