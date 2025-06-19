@@ -1,6 +1,5 @@
 use crate::http_error;
 use crate::models;
-use crate::AppState;
 use axum::{
     body::Body,
     extract::State,
@@ -13,7 +12,7 @@ use jsonwebtoken::{decode, errors::ErrorKind, Algorithm, DecodingKey, Validation
 use std::sync::Arc;
 
 pub async fn handler(
-    State(state): State<Arc<AppState>>,
+    State(state): State<Arc<models::AppState>>,
     mut req: Request<Body>,
     next: Next,
 ) -> Result<Response, (StatusCode, String)> {

@@ -1,4 +1,4 @@
-use crate::AppState;
+use crate::models;
 use axum::{extract::State, response::Redirect};
 use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use rand::distr::Alphanumeric;
@@ -13,7 +13,10 @@ fn generate_state() -> String {
         .collect()
 }
 
-pub async fn handler(State(state): State<Arc<AppState>>, jar: CookieJar) -> (CookieJar, Redirect) {
+pub async fn handler(
+    State(state): State<Arc<models::AppState>>,
+    jar: CookieJar,
+) -> (CookieJar, Redirect) {
     let oauth_state = generate_state();
     let redirect_uri = &state.config.oauth_redirect_uri;
     let scope = "openid";

@@ -1,6 +1,5 @@
 use crate::http_error;
 use crate::models;
-use crate::AppState;
 use axum::{
     extract::{Query, State},
     http::StatusCode,
@@ -25,7 +24,7 @@ struct UserInfo {
 }
 
 async fn exchange_code_for_token(
-    state: &AppState,
+    state: &models::AppState,
     client: &reqwest::Client,
     auth_code: &str,
 ) -> Result<models::TokenResponse, (StatusCode, String)> {
@@ -91,7 +90,7 @@ async fn get_user_info(
 }
 
 async fn create_user_session(
-    state: &AppState,
+    state: &models::AppState,
     user_info: &UserInfo,
 ) -> Result<String, (StatusCode, String)> {
     let existing_user: Option<models::User> =
@@ -150,7 +149,7 @@ async fn create_user_session(
 }
 
 pub async fn handler(
-    State(state): State<Arc<AppState>>,
+    State(state): State<Arc<models::AppState>>,
     jar: CookieJar,
     Query(params): Query<OAuthCallback>,
 ) -> Result<(CookieJar, Redirect), (StatusCode, String)> {

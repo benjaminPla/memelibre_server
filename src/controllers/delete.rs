@@ -1,6 +1,5 @@
 use crate::http_error;
-use crate::models::Meme;
-use crate::AppState;
+use crate::models;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -9,10 +8,10 @@ use memelibre_server::create_bucket_client;
 use std::sync::Arc;
 
 pub async fn handler(
-    State(state): State<Arc<AppState>>,
+    State(state): State<Arc<models::AppState>>,
     Path(id): Path<i32>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let meme: Meme = sqlx::query_as("SELECT id, image_url FROM memes WHERE id = $1")
+    let meme: models::Meme = sqlx::query_as("SELECT id, image_url FROM memes WHERE id = $1")
         .bind(id)
         .fetch_optional(&state.db)
         .await

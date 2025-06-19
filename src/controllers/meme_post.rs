@@ -1,5 +1,5 @@
 use crate::http_error;
-use crate::AppState;
+use crate::models;
 use aws_sdk_s3::primitives::ByteStream;
 use axum::{
     extract::{Multipart, State},
@@ -13,7 +13,7 @@ use std::sync::Arc;
 use webp::Encoder;
 
 pub async fn handler(
-    State(state): State<Arc<AppState>>,
+    State(state): State<Arc<models::AppState>>,
     mut multipart: Multipart,
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
     let mut file_data: Option<bytes::Bytes> = None;

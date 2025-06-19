@@ -15,6 +15,14 @@ CREATE TABLE users (
     is_admin BOOLEAN DEFAULT FALSE,
     username VARCHAR(32) NOT NULL
 );
+
+CREATE TABLE likes (
+    meme_id VARCHAR NOT NULL,
+    PRIMARY KEY (user_id, meme_id)
+    user_id VARCHAR NOT NULL,
+);
+CREATE INDEX idx_likes_meme_id ON likes(meme_id);
+ALTER TABLE memes ADD COLUMN like_count INTEGER DEFAULT 0;
 ```
 
 ## docker postgres

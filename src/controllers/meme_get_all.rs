@@ -1,13 +1,12 @@
 use crate::http_error;
-use crate::models::Meme;
-use crate::AppState;
+use crate::models;
 use axum::{extract::State, http::StatusCode, response::Json};
 use std::sync::Arc;
 
 pub async fn handler(
-    State(state): State<Arc<AppState>>,
-) -> Result<Json<Vec<Meme>>, (StatusCode, String)> {
-    let memes: Vec<Meme> = sqlx::query_as(
+    State(state): State<Arc<models::AppState>>,
+) -> Result<Json<Vec<models::Meme>>, (StatusCode, String)> {
+    let memes: Vec<models::Meme> = sqlx::query_as(
         "
         SELECT id, image_url
         FROM memes

@@ -1,5 +1,5 @@
 use crate::http_error;
-use crate::AppState;
+use crate::models;
 use axum::{
     body::Body,
     extract::{Extension, State},
@@ -9,10 +9,8 @@ use axum::{
 };
 use std::sync::Arc;
 
-use crate::models;
-
 pub async fn handler(
-    State(_state): State<Arc<AppState>>,
+    State(_state): State<Arc<models::AppState>>,
     Extension(claims): Extension<models::JWTClaims>,
     req: Request<Body>,
     next: Next,

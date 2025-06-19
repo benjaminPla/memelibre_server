@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use sqlx::postgres::PgPool;
 use std::env;
 
 #[derive(Clone)]
@@ -60,6 +61,12 @@ impl Config {
     }
 }
 
+#[derive(Clone)]
+pub struct AppState {
+    pub config: Config,
+    pub db: PgPool,
+}
+
 #[derive(Serialize, sqlx::FromRow)]
 pub struct Meme {
     pub id: i32,
@@ -71,6 +78,12 @@ pub struct User {
     pub id: String,
     pub is_admin: bool,
     pub username: String,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+pub struct Like {
+    pub meme_id: String,
+    pub user_id: String,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
