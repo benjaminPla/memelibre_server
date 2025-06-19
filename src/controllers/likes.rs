@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 pub async fn handler(
     State(state): State<Arc<models::AppState>>,
-    Path(meme_id): Path<String>,
+    Path(meme_id): Path<i32>,
     Extension(claims): Extension<models::JWTClaims>,
 ) -> Result<StatusCode, (StatusCode, String)> {
     let mut tx = state
@@ -17,12 +17,13 @@ pub async fn handler(
         .await
         .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
-    let existing_like: Option<models::Like> = sqlx::query_as("SELECT 1 FROM likes WHERE user_id = $1 AND meme_id = $2")
-        .bind(&claims.sub)
-        .bind(&meme_id)
-        .fetch_optional(&mut *tx)
-        .await
-        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
+    let existing_like: Option<models::Like> =
+        sqlx::query_as("SELECT user_id, meme_id FROM likes WHERE user_id = $1 AND meme_id = $2")
+            .bind(&claims.sub)
+            .bind(&meme_id)
+            .fetch_optional(&mut *tx)
+            .await
+            .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     if existing_like.is_some() {
         sqlx::query("DELETE FROM likes WHERE user_id = $1 AND meme_id = $2")

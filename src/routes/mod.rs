@@ -45,7 +45,13 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
                 )),
         );
 
-    let likes_routes = Router::new().route("/", post(controllers::likes::handler));
+    let likes_routes = Router::new().route(
+        "/{meme_id}",
+        post(controllers::likes::handler).layer(middleware::from_fn_with_state(
+            state.clone(),
+            middlewares::with_auth::handler,
+        )),
+    );
 
     Router::new()
         .nest(
@@ -53,6 +59,7 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
             Router::new()
                 .nest("/auth", auth_routes)
                 .nest("/meme", meme_routes)
+                .nest("/like", likes_routes)
                 .route("/load_more/{id}", get(controllers::load_more::handler))
                 .with_state(state.clone()),
         )

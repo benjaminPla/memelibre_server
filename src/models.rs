@@ -82,7 +82,7 @@ pub struct User {
 
 #[derive(Serialize, sqlx::FromRow)]
 pub struct Like {
-    pub meme_id: String,
+    pub meme_id: i32,
     pub user_id: String,
 }
 
