@@ -18,15 +18,21 @@ pub async fn handler(
         .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?
         .ok_or(http_error!(StatusCode::NOT_FOUND))?;
 
+    sqlx::query("DELETE FROM memes WHERE id = $1")
+        .bind(id)
+        .execute(&state.db)
+        .await
+        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
+
+    let bucket_client = create_bucket_client()
+        .await
+        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
+
     let object_key = meme
         .image_url
         .rsplit('/')
         .next()
         .ok_or(http_error!(StatusCode::NOT_FOUND))?;
-
-    let bucket_client = create_bucket_client()
-        .await
-        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     bucket_client
         .delete_object()
@@ -35,16 +41,6 @@ pub async fn handler(
         .send()
         .await
         .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
-
-    let meme_deleted = sqlx::query("DELETE FROM memes WHERE id = $1")
-        .bind(id)
-        .execute(&state.db)
-        .await
-        .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
-
-    if meme_deleted.rows_affected() == 0 {
-        return Err(http_error!(StatusCode::NOT_FOUND));
-    }
 
     Ok(StatusCode::NO_CONTENT)
 }

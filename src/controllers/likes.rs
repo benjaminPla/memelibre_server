@@ -43,7 +43,7 @@ pub async fn handler(
             .await
             .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
-        Ok(StatusCode::OK)
+        Ok(StatusCode::NO_CONTENT)
     } else {
         sqlx::query("INSERT INTO likes (user_id, meme_id) VALUES ($1, $2)")
             .bind(&claims.sub)
@@ -62,6 +62,6 @@ pub async fn handler(
             .await
             .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
-        Ok(StatusCode::OK)
+        Ok(StatusCode::CREATED)
     }
 }
