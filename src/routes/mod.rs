@@ -25,16 +25,13 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
         .allow_headers(Any);
 
     let auth_routes = Router::new()
-        .route("/", get(controllers::auth::handler))
-        .route("/callback", get(controllers::auth_callback::handler));
+        .route("/", get(controllers::auth::auth::handler))
+        .route("/callback", get(controllers::auth::auth_callback::handler));
 
     let meme_routes = Router::new()
-        .route("/get", get(controllers::meme_get_all::handler))
-        .route("/get/{id}", get(controllers::meme_get_by_id::handler))
-        .route("/post", post(controllers::meme_post::handler))
         .route(
             "/delete/{id}",
-            delete(controllers::delete::handler)
+            delete(controllers::meme::delete::handler)
                 .layer(middleware::from_fn_with_state(
                     state.clone(),
                     middlewares::with_is_admin::handler,
@@ -43,7 +40,10 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
                     state.clone(),
                     middlewares::with_auth::handler,
                 )),
-        );
+        )
+        .route("/get", get(controllers::meme::get::handler))
+        .route("/get/{id}", get(controllers::meme::get_by_id::handler))
+        .route("/post", post(controllers::meme::post::handler));
 
     let likes_routes = Router::new().route(
         "/{meme_id}",
@@ -60,7 +60,6 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
                 .nest("/auth", auth_routes)
                 .nest("/meme", meme_routes)
                 .nest("/like", likes_routes)
-                .route("/load_more/{id}", get(controllers::load_more::handler))
                 .with_state(state.clone()),
         )
         .layer(cors)

@@ -102,3 +102,8 @@ pub struct TokenResponse {
     pub scope: Option<String>,
     pub token_type: String,
 }
+
+#[derive(Deserialize)]
+pub struct Pagination {
+    pub offset: Option<i32>,
+}
