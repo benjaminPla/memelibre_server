@@ -12,7 +12,7 @@ pub async fn handler(
     Path(id): Path<i32>,
 ) -> Result<Json<models::Meme>, (StatusCode, String)> {
     let meme: Option<models::Meme> =
-        sqlx::query_as("SELECT id, image_url FROM memes WHERE id = $1")
+        sqlx::query_as("SELECT id, image_url, like_count FROM memes WHERE id = $1")
             .bind(id)
             .fetch_optional(&state.db)
             .await

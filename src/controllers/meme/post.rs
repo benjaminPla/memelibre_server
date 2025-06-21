@@ -95,7 +95,7 @@ pub async fn handler(
 
     match put_result {
         Ok(_) => {
-            sqlx::query("INSERT INTO memes (image_url) VALUES ($1)")
+            sqlx::query("INSERT INTO memes (image_url, like_count) VALUES ($1, 0)")
                 .bind(&image_url)
                 .execute(&state.db)
                 .await

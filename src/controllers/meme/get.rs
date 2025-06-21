@@ -13,7 +13,7 @@ pub async fn handler(
 ) -> Result<Json<Vec<models::Meme>>, (StatusCode, String)> {
     let memes: Vec<models::Meme> = sqlx::query_as(
         "
-        SELECT id, image_url
+        SELECT id, image_url, like_count
         FROM memes
         WHERE id < COALESCE($1, 2147483647)
         ORDER BY id DESC

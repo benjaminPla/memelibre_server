@@ -71,6 +71,7 @@ pub struct AppState {
 pub struct Meme {
     pub id: i32,
     pub image_url: String,
+    pub like_count: i32,
 }
 
 #[derive(Serialize, sqlx::FromRow)]

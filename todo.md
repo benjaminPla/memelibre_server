@@ -1,6 +1,4 @@
 - [ ] add watermark
-- [ ] remove cookie after error during auth/callback?
-- [ ] update oauth state - remove cookie
 - [ ] update with_auth jwt error handling
 - [x] add delete endpoint
 - [x] add favicon
@@ -10,6 +8,7 @@
 - [x] add share, individual view
 - [x] add upload.html max weigth note
 - [x] check `name` in upload logic
+- [x] check oath flow
 - [x] compress image before saving in bucket
 - [x] convert image to webp
 - [x] fix share image

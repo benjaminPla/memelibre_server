@@ -21,7 +21,6 @@ pub async fn handler(
     let redirect_uri = &state.config.oauth_redirect_uri;
     let scope = "openid";
 
-    // Save `state` to cookie (or Redis, DB, session etc.)
     let cookie = Cookie::build(("oauth_state", oauth_state.clone()))
         .http_only(true)
         .max_age(cookie::time::Duration::minutes(5))
