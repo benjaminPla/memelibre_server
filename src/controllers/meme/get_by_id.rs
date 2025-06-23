@@ -10,9 +10,21 @@ use std::sync::Arc;
 pub async fn handler(
     State(state): State<Arc<models::AppState>>,
     Path(id): Path<i32>,
-) -> Result<Json<models::Meme>, (StatusCode, String)> {
-    let meme: Option<models::Meme> =
-        sqlx::query_as("SELECT id, image_url, like_count FROM memes WHERE id = $1")
+) -> Result<Json<models::MemeWithUsername>, (StatusCode, String)> {
+    let meme: Option<models::MemeWithUsername> =
+        sqlx::query_as(
+            "
+            SELECT
+                memes.created_by,
+                memes.id,
+                memes.image_url,
+                memes.like_count,
+                users.username
+            FROM memes
+            LEFT JOIN users ON memes.created_by = users.id
+            WHERE memes.id = $1
+            "
+            )
             .bind(id)
             .fetch_optional(&state.db)
             .await

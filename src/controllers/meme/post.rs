@@ -2,7 +2,7 @@ use crate::http_error;
 use crate::models;
 use aws_sdk_s3::primitives::ByteStream;
 use axum::{
-    extract::{Multipart, State},
+    extract::{Extension,Multipart, State},
     http::status::StatusCode,
 };
 use chrono::Utc;
@@ -14,6 +14,7 @@ use webp::Encoder;
 
 pub async fn handler(
     State(state): State<Arc<models::AppState>>,
+    Extension(claims): Extension<models::JWTClaims>,
     mut multipart: Multipart,
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
     let mut file_data: Option<bytes::Bytes> = None;
@@ -95,7 +96,8 @@ pub async fn handler(
 
     match put_result {
         Ok(_) => {
-            sqlx::query("INSERT INTO memes (image_url, like_count) VALUES ($1, 0)")
+            sqlx::query("INSERT INTO memes (created_by, image_url, like_count) VALUES ($1, $2, 0)")
+                .bind(&claims.sub)
                 .bind(&image_url)
                 .execute(&state.db)
                 .await

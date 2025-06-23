@@ -51,7 +51,13 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
         )
         .route("/get", get(controllers::meme::get::handler))
         .route("/get/{id}", get(controllers::meme::get_by_id::handler))
-        .route("/post", post(controllers::meme::post::handler));
+        .route(
+            "/post",
+            post(controllers::meme::post::handler).layer(middleware::from_fn_with_state(
+                state.clone(),
+                middlewares::with_is_admin::handler,
+            )),
+        );
 
     let likes_routes = Router::new().route(
         "/{meme_id}",

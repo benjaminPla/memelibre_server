@@ -68,6 +68,7 @@ pub struct AppState {
 
 #[derive(Serialize, sqlx::FromRow)]
 pub struct Meme {
+    pub created_by: Option<String>,
     pub id: i32,
     pub image_url: String,
     pub like_count: i32,
@@ -78,6 +79,14 @@ pub struct User {
     pub id: String,
     pub is_admin: bool,
     pub username: String,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+pub struct MemeWithUsername {
+    pub id: i32,
+    pub image_url: String,
+    pub like_count: i32,
+    pub username: Option<String>,
 }
 
 #[derive(Serialize, sqlx::FromRow)]

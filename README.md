@@ -33,6 +33,13 @@ ADD CONSTRAINT fk_meme FOREIGN KEY (meme_id) REFERENCES memes(id) ON DELETE CASC
 ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE users ADD CONSTRAINT unique_username UNIQUE (username);
+
+ALTER TABLE memes
+ADD COLUMN created_by VARCHAR(32),
+ADD CONSTRAINT fk_created_by
+	FOREIGN KEY (created_by)
+	REFERENCES users(id)
+	ON DELETE SET NULL;
 ```
 
 ## docker postgres
