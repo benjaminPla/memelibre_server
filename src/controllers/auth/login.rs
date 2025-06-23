@@ -23,7 +23,7 @@ pub async fn handler(
 
     let cookie = Cookie::build(("oauth_state", oauth_state.clone()))
         .http_only(true)
-        .max_age(cookie::time::Duration::minutes(5))
+        .max_age(cookie::time::Duration::seconds(15))
         .path("/")
         .same_site(SameSite::Lax)
         .secure(true)

@@ -1,2 +1,4 @@
-pub mod auth;
-pub mod auth_callback;
+pub mod callback;
+pub mod login;
+pub mod logout;
+pub mod me;

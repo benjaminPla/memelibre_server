@@ -25,8 +25,16 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
         .allow_headers(Any);
 
     let auth_routes = Router::new()
-        .route("/", get(controllers::auth::auth::handler))
-        .route("/callback", get(controllers::auth::auth_callback::handler));
+        .route("/callback", get(controllers::auth::callback::handler))
+        .route("/login", get(controllers::auth::login::handler))
+        .route("/logout", get(controllers::auth::logout::handler))
+        .route(
+            "/me",
+            get(controllers::auth::me::handler).layer(middleware::from_fn_with_state(
+                state.clone(),
+                middlewares::with_auth::handler,
+            )),
+        );
 
     let meme_routes = Router::new()
         .route(
