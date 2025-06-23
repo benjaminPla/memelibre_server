@@ -55,7 +55,7 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
             "/post",
             post(controllers::meme::post::handler).layer(middleware::from_fn_with_state(
                 state.clone(),
-                middlewares::with_is_admin::handler,
+                middlewares::with_auth::handler,
             )),
         );
 

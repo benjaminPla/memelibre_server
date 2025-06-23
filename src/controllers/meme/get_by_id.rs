@@ -11,9 +11,8 @@ pub async fn handler(
     State(state): State<Arc<models::AppState>>,
     Path(id): Path<i32>,
 ) -> Result<Json<models::MemeWithUsername>, (StatusCode, String)> {
-    let meme: Option<models::MemeWithUsername> =
-        sqlx::query_as(
-            "
+    let meme: Option<models::MemeWithUsername> = sqlx::query_as(
+        "
             SELECT
                 memes.created_by,
                 memes.id,
@@ -23,12 +22,12 @@ pub async fn handler(
             FROM memes
             LEFT JOIN users ON memes.created_by = users.id
             WHERE memes.id = $1
-            "
-            )
-            .bind(id)
-            .fetch_optional(&state.db)
-            .await
-            .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
+            ",
+    )
+    .bind(id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     meme.map(Json).ok_or(http_error!(StatusCode::NOT_FOUND))
 }
