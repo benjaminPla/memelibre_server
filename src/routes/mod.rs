@@ -4,7 +4,7 @@ use crate::models;
 use axum::{
     http::HeaderValue,
     middleware,
-    routing::{delete, get, post},
+    routing::{delete, get, post, put},
     Router,
 };
 use std::sync::Arc;
@@ -61,13 +61,22 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
         )),
     );
 
+    let user_routes = Router::new().route(
+        "/put",
+        put(controllers::user::put::handler).layer(middleware::from_fn_with_state(
+            state.clone(),
+            middlewares::with_auth::handler,
+        )),
+    );
+
     Router::new()
         .nest(
             "/api",
             Router::new()
                 .nest("/auth", auth_routes)
-                .nest("/meme", meme_routes)
                 .nest("/like", likes_routes)
+                .nest("/meme", meme_routes)
+                .nest("/user", user_routes)
                 .with_state(state.clone()),
         )
         .layer(cors)

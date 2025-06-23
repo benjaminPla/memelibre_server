@@ -1,5 +1,4 @@
 - [ ] add watermark
-- [ ] update with_auth jwt error handling
 - [x] add delete endpoint
 - [x] add favicon
 - [x] add gif
@@ -24,3 +23,4 @@
 - [x] update `google_id` users VARCHAR
 - [x] update html error
 - [x] update load_more - send json and convert to html in te client
+- [x] update with_auth jwt error handling

@@ -23,11 +23,16 @@ CREATE TABLE likes (
 );
 
 CREATE INDEX idx_likes_meme_id ON likes(meme_id);
+
 ALTER TABLE memes ADD COLUMN like_count INTEGER DEFAULT 0;
+
 ALTER TABLE memes ALTER COLUMN like_count SET NOT NULL;
+
 ALTER TABLE likes
 ADD CONSTRAINT fk_meme FOREIGN KEY (meme_id) REFERENCES memes(id) ON DELETE CASCADE,
 ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE users ADD CONSTRAINT unique_username UNIQUE (username);
 ```
 
 ## docker postgres
