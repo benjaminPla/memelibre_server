@@ -18,17 +18,17 @@ pub async fn handler(
         .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     let existing_like: Option<models::Like> =
-        sqlx::query_as("SELECT user_id, meme_id FROM likes WHERE user_id = $1 AND meme_id = $2")
-            .bind(&claims.sub)
+        sqlx::query_as("SELECT meme_id, user_id FROM likes WHERE meme_id = $1 AND user_id = $2")
             .bind(&meme_id)
+            .bind(&claims.sub)
             .fetch_optional(&mut *tx)
             .await
             .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     if existing_like.is_some() {
-        sqlx::query("DELETE FROM likes WHERE user_id = $1 AND meme_id = $2")
-            .bind(&claims.sub)
+        sqlx::query("DELETE FROM likes WHERE meme_id = $1 AND user_id = $2")
             .bind(&meme_id)
+            .bind(&claims.sub)
             .execute(&mut *tx)
             .await
             .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
@@ -45,9 +45,9 @@ pub async fn handler(
 
         Ok(StatusCode::NO_CONTENT)
     } else {
-        sqlx::query("INSERT INTO likes (user_id, meme_id) VALUES ($1, $2)")
-            .bind(&claims.sub)
+        sqlx::query("INSERT INTO likes (meme_id, user_id) VALUES ($1, $2)")
             .bind(&meme_id)
+            .bind(&claims.sub)
             .execute(&mut *tx)
             .await
             .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;

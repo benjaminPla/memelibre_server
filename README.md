@@ -22,6 +22,12 @@ CREATE TABLE likes (
     PRIMARY KEY (user_id, meme_id)
 );
 
+CREATE TABLE saved (
+    meme_id INTEGER NOT NULL,
+    user_id VARCHAR(32) NOT NULL,
+    PRIMARY KEY (user_id, meme_id)
+);
+
 CREATE INDEX idx_likes_meme_id ON likes(meme_id);
 
 ALTER TABLE memes ADD COLUMN like_count INTEGER DEFAULT 0;
@@ -40,6 +46,20 @@ ADD CONSTRAINT fk_created_by
 	FOREIGN KEY (created_by)
 	REFERENCES users(id)
 	ON DELETE SET NULL;
+
+UPDATE memes
+SET created_by = <sudo_id>
+WHERE created_by IS NULL;
+
+ALTER TABLE memes
+ALTER COLUMN created_by SET NOT NULL;
+
+CREATE INDEX idx_saved_memes_user_id ON saved(user_id);
+CREATE INDEX idx_saved_memes_meme_id ON saved(meme_id);
+
+ALTER TABLE saved
+ADD CONSTRAINT fk_saved_meme FOREIGN KEY (meme_id) REFERENCES memes(id) ON DELETE CASCADE,
+ADD CONSTRAINT fk_saved_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ```
 
 ## docker postgres

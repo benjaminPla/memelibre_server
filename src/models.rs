@@ -95,6 +95,12 @@ pub struct Like {
     pub user_id: String,
 }
 
+#[derive(Serialize, sqlx::FromRow)]
+pub struct Save {
+    pub meme_id: i32,
+    pub user_id: String,
+}
+
 #[derive(Clone, Deserialize, Serialize)]
 pub struct JWTClaims {
     pub exp: usize,

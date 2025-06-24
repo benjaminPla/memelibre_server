@@ -59,13 +59,29 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
             )),
         );
 
-    let likes_routes = Router::new().route(
-        "/{meme_id}",
-        post(controllers::likes::handler).layer(middleware::from_fn_with_state(
+    let like_routes = Router::new().route(
+        "/post/{meme_id}",
+        post(controllers::like::post::handler).layer(middleware::from_fn_with_state(
             state.clone(),
             middlewares::with_auth::handler,
         )),
     );
+
+    let save_routes = Router::new()
+        .route(
+            "/post/{meme_id}",
+            post(controllers::save::post::handler).layer(middleware::from_fn_with_state(
+                state.clone(),
+                middlewares::with_auth::handler,
+            )),
+        )
+        .route(
+            "/get",
+            get(controllers::save::get::handler).layer(middleware::from_fn_with_state(
+                state.clone(),
+                middlewares::with_auth::handler,
+            )),
+        );
 
     let user_routes = Router::new().route(
         "/put",
@@ -80,8 +96,9 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
             "/api",
             Router::new()
                 .nest("/auth", auth_routes)
-                .nest("/like", likes_routes)
+                .nest("/like", like_routes)
                 .nest("/meme", meme_routes)
+                .nest("/save", save_routes)
                 .nest("/user", user_routes)
                 .with_state(state.clone()),
         )
