@@ -28,6 +28,15 @@ CREATE TABLE saved (
     PRIMARY KEY (user_id, meme_id)
 );
 
+CREATE TABLE comments (
+    id SERIAL PRIMARY KEY,
+    meme_id INTEGER NOT NULL,
+    user_id VARCHAR(32) NOT NULL,
+    content VARCHAR(128) NOT NULL,
+    CONSTRAINT fk_comment_meme FOREIGN KEY (meme_id) REFERENCES memes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE INDEX idx_likes_meme_id ON likes(meme_id);
 
 ALTER TABLE memes ADD COLUMN like_count INTEGER DEFAULT 0;
@@ -111,26 +120,4 @@ kubectl rollout restart deployment memelibre
 ```
 curl ifconfig.me
 curl https://api.ipify.org
-```
-
-## likes updates ideas
-
-return this from the meme/get(s)
-
-```
-"
-SELECT
-    m.id,
-    m.image_url,
-    m.like_count,
-    EXISTS (
-        SELECT 1
-        FROM likes l
-        WHERE l.meme_id = m.id AND l.user_id = $3
-    ) AS has_liked
-FROM memes m
-WHERE m.id < COALESCE($1, 2147483647)
-ORDER BY m.id DESC
-LIMIT $2
-",
 ```

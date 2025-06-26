@@ -10,18 +10,16 @@ use std::sync::Arc;
 pub async fn handler(
     State(state): State<Arc<models::AppState>>,
     Extension(claims): Extension<models::JWTClaims>,
-) -> Result<Json<Vec<models::MemeWithUsername>>, (StatusCode, String)> {
-    let saved: Vec<models::MemeWithUsername> = sqlx::query_as(
+) -> Result<Json<Vec<models::Meme>>, (StatusCode, String)> {
+    let saved: Vec<models::Meme> = sqlx::query_as(
         "
         SELECT
             memes.created_by,
             memes.id,
             memes.image_url,
-            memes.like_count,
-            users.username
-        FROM saved
-        JOIN memes ON saved.meme_id = memes.id
-        LEFT JOIN users ON memes.created_by = users.id
+            memes.like_count
+        FROM memes
+        JOIN saved ON saved.meme_id = memes.id
         WHERE saved.user_id = $1
         ORDER BY memes.id DESC
         ",

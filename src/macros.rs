@@ -34,7 +34,7 @@ macro_rules! http_error {
 
     ($status:expr, err: $error:expr) => {{
         eprintln!(
-            "{}:{} - HTTP {} - {}",
+            "{}:{} - HTTP {} - {:#?}",
             file!(),
             line!(),
             $status.as_u16(),

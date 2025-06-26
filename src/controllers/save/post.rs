@@ -11,14 +11,13 @@ pub async fn handler(
     Path(meme_id): Path<i32>,
     Extension(claims): Extension<models::JWTClaims>,
 ) -> Result<StatusCode, (StatusCode, String)> {
-    let existing_saved: Option<models::Save> = sqlx::query_as(
-        "SELECT meme_id, user_id FROM saved WHERE meme_id = $1 AND user_id = $2",
-    )
-    .bind(&meme_id)
-    .bind(&claims.sub)
-    .fetch_optional(&state.db)
-    .await
-    .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
+    let existing_saved: Option<models::Save> =
+        sqlx::query_as("SELECT 1 FROM saved WHERE meme_id = $1 AND user_id = $2")
+            .bind(&meme_id)
+            .bind(&claims.sub)
+            .fetch_optional(&state.db)
+            .await
+            .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     if existing_saved.is_some() {
         sqlx::query("DELETE FROM saved WHERE meme_id = $1 AND user_id = $2")

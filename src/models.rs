@@ -2,6 +2,19 @@ use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
 use std::env;
 
+pub struct AppState {
+    pub config: Config,
+    pub db: PgPool,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+pub struct CommentWithUsername {
+    pub content: String,
+    pub id: i32,
+    pub meme_id: i32,
+    pub username: String,
+}
+
 #[derive(Clone)]
 #[allow(dead_code)]
 pub struct Config {
@@ -61,32 +74,12 @@ impl Config {
     }
 }
 
-pub struct AppState {
-    pub config: Config,
-    pub db: PgPool,
-}
-
-#[derive(Serialize, sqlx::FromRow)]
-pub struct Meme {
-    pub created_by: Option<String>,
-    pub id: i32,
-    pub image_url: String,
-    pub like_count: i32,
-}
-
-#[derive(Serialize, sqlx::FromRow)]
-pub struct User {
-    pub id: String,
+#[derive(Clone, Deserialize, Serialize)]
+pub struct JWTClaims {
+    pub exp: usize,
     pub is_admin: bool,
+    pub sub: String,
     pub username: String,
-}
-
-#[derive(Serialize, sqlx::FromRow)]
-pub struct MemeWithUsername {
-    pub id: i32,
-    pub image_url: String,
-    pub like_count: i32,
-    pub username: Option<String>,
 }
 
 #[derive(Serialize, sqlx::FromRow)]
@@ -96,17 +89,48 @@ pub struct Like {
 }
 
 #[derive(Serialize, sqlx::FromRow)]
+pub struct Meme {
+    pub created_by: String,
+    pub id: i32,
+    pub image_url: String,
+    pub like_count: i32,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+pub struct MemeWithUsernameAndComments {
+    pub comments: Vec<CommentWithUsername>,
+    pub id: i32,
+    pub image_url: String,
+    pub like_count: i32,
+    pub username: String,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+pub struct MemeWithUsernameAndCommentsCount {
+    pub comment_count: i64,
+    pub id: i32,
+    pub image_url: String,
+    pub like_count: i32,
+    pub username: String,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+pub struct MemeWithUsername {
+    pub id: i32,
+    pub image_url: String,
+    pub like_count: i32,
+    pub username: String,
+}
+
+#[derive(Deserialize)]
+pub struct Pagination {
+    pub offset: Option<i32>,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
 pub struct Save {
     pub meme_id: i32,
     pub user_id: String,
-}
-
-#[derive(Clone, Deserialize, Serialize)]
-pub struct JWTClaims {
-    pub exp: usize,
-    pub is_admin: bool,
-    pub sub: String,
-    pub username: String,
 }
 
 #[derive(Deserialize)]
@@ -118,7 +142,9 @@ pub struct TokenResponse {
     pub token_type: String,
 }
 
-#[derive(Deserialize)]
-pub struct Pagination {
-    pub offset: Option<i32>,
+#[derive(Serialize, sqlx::FromRow)]
+pub struct User {
+    pub id: String,
+    pub is_admin: bool,
+    pub username: String,
 }

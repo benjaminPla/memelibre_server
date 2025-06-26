@@ -36,6 +36,14 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
             )),
         );
 
+    let comment_routes = Router::new().route(
+        "/post/{meme_id}",
+        post(controllers::comment::post::handler).layer(middleware::from_fn_with_state(
+            state.clone(),
+            middlewares::with_auth::handler,
+        )),
+    );
+
     let meme_routes = Router::new()
         .route(
             "/delete/{id}",
@@ -96,6 +104,7 @@ pub fn create_route(state: &Arc<models::AppState>) -> Router {
             "/api",
             Router::new()
                 .nest("/auth", auth_routes)
+                .nest("/comment", comment_routes)
                 .nest("/like", like_routes)
                 .nest("/meme", meme_routes)
                 .nest("/save", save_routes)

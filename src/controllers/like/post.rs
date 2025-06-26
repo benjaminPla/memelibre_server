@@ -18,7 +18,7 @@ pub async fn handler(
         .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
     let existing_like: Option<models::Like> =
-        sqlx::query_as("SELECT meme_id, user_id FROM likes WHERE meme_id = $1 AND user_id = $2")
+        sqlx::query_as("SELECT 1 FROM likes WHERE meme_id = $1 AND user_id = $2")
             .bind(&meme_id)
             .bind(&claims.sub)
             .fetch_optional(&mut *tx)

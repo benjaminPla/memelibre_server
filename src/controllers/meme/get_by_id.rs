@@ -10,11 +10,10 @@ use std::sync::Arc;
 pub async fn handler(
     State(state): State<Arc<models::AppState>>,
     Path(id): Path<i32>,
-) -> Result<Json<models::MemeWithUsername>, (StatusCode, String)> {
+) -> Result<Json<models::MemeWithUsernameAndComments>, (StatusCode, String)> {
     let meme: Option<models::MemeWithUsername> = sqlx::query_as(
         "
             SELECT
-                memes.created_by,
                 memes.id,
                 memes.image_url,
                 memes.like_count,
@@ -29,5 +28,33 @@ pub async fn handler(
     .await
     .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
 
-    meme.map(Json).ok_or(http_error!(StatusCode::NOT_FOUND))
+    let meme = meme.ok_or(http_error!(StatusCode::NOT_FOUND))?;
+
+    let comments: Vec<models::CommentWithUsername> = sqlx::query_as(
+        "
+        SELECT 
+            comments.content,
+            comments.id,
+            comments.meme_id,
+            users.username
+        FROM comments
+        LEFT JOIN users ON comments.user_id = users.id
+        WHERE comments.meme_id = $1
+        ORDER BY comments.id ASC
+        ",
+    )
+    .bind(id)
+    .fetch_all(&state.db)
+    .await
+    .map_err(|e| http_error!(StatusCode::INTERNAL_SERVER_ERROR, err: e))?;
+
+    let result = models::MemeWithUsernameAndComments {
+        id: meme.id,
+        image_url: meme.image_url,
+        like_count: meme.like_count,
+        username: meme.username,
+        comments,
+    };
+
+    Ok(Json(result))
 }

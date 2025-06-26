@@ -10,18 +10,20 @@ use std::sync::Arc;
 pub async fn handler(
     State(state): State<Arc<models::AppState>>,
     Query(params): Query<models::Pagination>,
-) -> Result<Json<Vec<models::MemeWithUsername>>, (StatusCode, String)> {
-    let memes: Vec<models::MemeWithUsername> = sqlx::query_as(
+) -> Result<Json<Vec<models::MemeWithUsernameAndCommentsCount>>, (StatusCode, String)> {
+    let memes: Vec<models::MemeWithUsernameAndCommentsCount> = sqlx::query_as(
         "
         SELECT
-            memes.created_by,
+            COALESCE(COUNT(comments.id), 0) as comment_count,
             memes.id,
             memes.image_url,
             memes.like_count,
             users.username
         FROM memes
         LEFT JOIN users ON memes.created_by = users.id
+        LEFT JOIN comments ON memes.id = comments.meme_id
         WHERE memes.id < COALESCE($1, 2147483647)
+        GROUP BY memes.id, memes.image_url, memes.like_count, users.username
         ORDER BY memes.id DESC
         LIMIT $2;
         ",
