@@ -2,7 +2,6 @@
 macro_rules! http_error {
     ($status:expr) => {{
         use axum::http::StatusCode;
-
         let message = match $status {
             StatusCode::INTERNAL_SERVER_ERROR => "Internal server error",
             StatusCode::NOT_FOUND => "Not found",
@@ -10,7 +9,6 @@ macro_rules! http_error {
             StatusCode::UNAUTHORIZED => "Unauthorized",
             _ => "Internal server error",
         };
-
         eprintln!(
             "{}:{} - HTTP {} {}",
             file!(),
