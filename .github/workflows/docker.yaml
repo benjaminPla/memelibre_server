@@ -1,11 +1,14 @@
-name: Build and Push Docker Images
+name: Build, Push & Manage Docker Images
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
   push:
     branches: [master]
 
 jobs:
-  build-and-push:
+  build_preview:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
 
     steps:
@@ -18,10 +21,45 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push memelibre_server
+      - name: Build and push preview images
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/memelibre_server:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/memelibre_server:${{ github.sha }}
+
+  cleanup_preview:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete preview images from Docker Hub
+        run: |
+          echo "Deleting Docker images for PR-${{ github.event.number }}"
+          curl -X DELETE \
+            -u "${{ secrets.DOCKERHUB_USERNAME }}:${{ secrets.DOCKERHUB_TOKEN }}" \
+            "https://hub.docker.com/v2/repositories/${{ secrets.DOCKERHUB_USERNAME }}/memelibre_server/tags/${{ github.sha }}/" || true
+
+  build_main:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push production image (latest)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/memelibre_server:${{ github.sha }}
