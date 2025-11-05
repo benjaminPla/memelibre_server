@@ -1,0 +1,16 @@
+name: Cleanup Preview Image
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete preview Docker image
+        run: |
+          echo "Deleting Docker images for PR-${{ github.event.number }}"
+          curl -X DELETE \
+            -u "${{ secrets.DOCKERHUB_USERNAME }}:${{ secrets.DOCKERHUB_API_TOKEN }}" \
+            "https://hub.docker.com/v2/repositories/${{ secrets.DOCKERHUB_USERNAME }}/memelibre_server/tags/pr-${{ github.event.number }}/"
