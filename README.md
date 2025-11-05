@@ -114,10 +114,3 @@ after changes on config or secret
 kubectl rollout restart deployment memelibre
 
 ```
-
-## my ip
-
-```
-curl ifconfig.me
-curl https://api.ipify.org
-```
